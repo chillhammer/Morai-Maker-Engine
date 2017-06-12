@@ -14,21 +14,25 @@ namespace Assets.Scripts.Core
         [SerializeField]
         private Image image;
 
-        public void Initialize(SpriteData data, int x, int y)
+        public void SetSprite(SpriteData data)
         {
             Sprite = data;
             image.sprite = data.Sprite;
-            RectTransform rect = ((RectTransform)transform);
-            rect.sizeDelta = new Vector2(data.Width, data.Height);
+            ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
 
             // TODO Stretching
-
-            Reposition(x, y);
         }
 
-        public void Reposition(int x, int y)
+        public void SetPosition(int x, int y)
         {
             transform.position = new Vector2(x + (float)Sprite.Width / 2, y + (float)Sprite.Height / 2);
+        }
+
+        public void SetAlpha(float alpha)
+        {
+            Color temp = image.color;
+            temp.a = alpha;
+            image.color = temp;
         }
     }
 }

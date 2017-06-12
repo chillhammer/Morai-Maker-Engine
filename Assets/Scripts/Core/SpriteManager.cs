@@ -15,6 +15,7 @@ namespace Assets.Scripts.Core
         public int Width;
         public int Height;
         public bool Functional;
+        public bool HoldToPlace;
     }
 
     public class SpriteManager : Singleton<SpriteManager>

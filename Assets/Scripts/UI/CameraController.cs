@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.UI
 {
-    public class CameraController : Singleton<CameraController>
+    public class CameraController : MonoBehaviour
     {
         public bool MouseScroll;
         public float OffsetX { get { return transform.position.x - minX; } }
@@ -17,9 +17,8 @@ namespace Assets.Scripts.UI
         private readonly float ACCELERATION = 0.3f;
         private readonly float DRAG = 0.9f;
 
-        protected override void Awake()
+        private void Awake()
         {
-            base.Awake();
             GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
         }
 
@@ -63,7 +62,6 @@ namespace Assets.Scripts.UI
                 x = maxX;
                 speed = 0;
             }
-
             else if(x < minX)
             {
                 x = minX;
@@ -90,8 +88,6 @@ namespace Assets.Scripts.UI
         {
             scrollTarget = null;
         }
-
-        // TODO Static point translation methods
 
         private void OnGridSizeChanged(int x, int y)
         {

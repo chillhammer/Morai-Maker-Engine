@@ -25,15 +25,6 @@ namespace Assets.Scripts.Core
             SetGridSize(200, 14);
         }
 
-        // TODO Temporary
-        private void Update()
-        {
-            if(Input.GetMouseButtonDown(0))
-                AddGridObject(SpriteManager.GetSpriteData(SpriteName.Tree), 
-                    Mathf.RoundToInt(Input.mousePosition.x / Screen.width * Camera.main.orthographicSize * Camera.main.aspect * 2 + CameraController.Instance.OffsetX), 
-                    Mathf.RoundToInt(Input.mousePosition.y / Screen.height * Camera.main.orthographicSize * 2));
-        }
-
         public void SetGridSize(int x, int y)
         {
             gridWidth = x;
@@ -56,7 +47,6 @@ namespace Assets.Scripts.Core
             {
                 for(int j = y; j < y + sprite.Height; j++)
                 {
-                    Debug.Log(i + " " + j + ": " + gridDecorative[i, j]);
                     if(sprite.Functional && gridFunctional[i, j] != null)
                         return false;
                     else if(!sprite.Functional && gridDecorative[i, j] != null)
@@ -74,7 +64,8 @@ namespace Assets.Scripts.Core
 
             // Instantiate object
             GridObject clone = Instantiate(gridObjectPrefab, gridObjectParent);
-            clone.Initialize(sprite, x, y);
+            clone.SetSprite(sprite);
+            clone.SetPosition(x, y);
 
             // Add references to object in grid
             for(int i = x; i < x + sprite.Width; i++)
