@@ -29,7 +29,7 @@ namespace Assets.Scripts.Core
         private void Update()
         {
             if(Input.GetMouseButtonDown(0))
-                AddGridObject(SpriteManager.GetSpriteData(SpriteName.Ground), 
+                AddGridObject(SpriteManager.GetSpriteData(SpriteName.Tree), 
                     Mathf.RoundToInt(Input.mousePosition.x / Screen.width * Camera.main.orthographicSize * Camera.main.aspect * 2 + CameraController.Instance.OffsetX), 
                     Mathf.RoundToInt(Input.mousePosition.y / Screen.height * Camera.main.orthographicSize * 2));
         }
@@ -56,10 +56,10 @@ namespace Assets.Scripts.Core
             {
                 for(int j = y; j < y + sprite.Height; j++)
                 {
-                    if(sprite.Functional)
-                        if(gridFunctional[i, j] != null)
-                            return false;
-                    else if(gridDecorative[i, j] != null)
+                    Debug.Log(i + " " + j + ": " + gridDecorative[i, j]);
+                    if(sprite.Functional && gridFunctional[i, j] != null)
+                        return false;
+                    else if(!sprite.Functional && gridDecorative[i, j] != null)
                         return false;
                 }
             }

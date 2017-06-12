@@ -18,8 +18,10 @@ namespace Assets.Scripts.Core
         {
             Sprite = data;
             image.sprite = data.Sprite;
+            RectTransform rect = ((RectTransform)transform);
+            rect.sizeDelta = new Vector2(data.Width, data.Height);
 
-            // TODO Scaling
+            // TODO Stretching
 
             Reposition(x, y);
         }
