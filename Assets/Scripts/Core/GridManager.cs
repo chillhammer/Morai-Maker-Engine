@@ -1,34 +1,92 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Assets.Scripts.UI;
+using System;
 using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
     public class GridManager : Singleton<GridManager>
     {
-        private TileObject[,] gridFunctional;
-        private TileObject[,] gridDecorative;
+        public event Action<int, int> GridSizeChanged;
 
-        protected override void Awake()
+        [SerializeField]
+        private GridObject gridObjectPrefab;
+        [SerializeField]
+        private Transform gridObjectParent;
+
+        private int gridWidth;
+        private int gridHeight;
+
+        private GridObject[,] gridFunctional;
+        private GridObject[,] gridDecorative;
+
+        // TODO Temporary
+        protected void Start()
         {
-            base.Awake();
             SetGridSize(200, 14);
+        }
+
+        // TODO Temporary
+        private void Update()
+        {
+            if(Input.GetMouseButtonDown(0))
+                AddGridObject(SpriteManager.GetSpriteData(SpriteName.Ground), 
+                    Mathf.RoundToInt(Input.mousePosition.x / Screen.width * Camera.main.orthographicSize * Camera.main.aspect * 2 + CameraController.Instance.OffsetX), 
+                    Mathf.RoundToInt(Input.mousePosition.y / Screen.height * Camera.main.orthographicSize * 2));
         }
 
         public void SetGridSize(int x, int y)
         {
-            gridFunctional = new TileObject[x, y];
-            gridDecorative = new TileObject[x, y];
+            gridWidth = x;
+            gridHeight = y;
 
-            // Set main camera positioning
-            Camera.main.orthographicSize = (float)y / 2;
+            gridFunctional = new GridObject[x, y];
+            gridDecorative = new GridObject[x, y];
 
-            // Set minimap camera positioning
+            GridSizeChanged(x, y);
         }
 
-        public void AddTileObject(TileObject tileObject, int x, int y)
+        public bool CanAddGridObject(SpriteData sprite, int x, int y)
         {
-            // TODO
+            if(x < 0 || x + sprite.Width > gridWidth)
+                return false;
+            if(y < 0 || y + sprite.Height > gridHeight)
+                return false;
+
+            for(int i = x; i < x + sprite.Width; i++)
+            {
+                for(int j = y; j < y + sprite.Height; j++)
+                {
+                    if(sprite.Functional)
+                        if(gridFunctional[i, j] != null)
+                            return false;
+                    else if(gridDecorative[i, j] != null)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        public void AddGridObject(SpriteData sprite, int x, int y)
+        {
+            if(!CanAddGridObject(sprite, x, y))
+                return;
+
+            // Instantiate object
+            GridObject clone = Instantiate(gridObjectPrefab, gridObjectParent);
+            clone.Initialize(sprite, x, y);
+
+            // Add references to object in grid
+            for(int i = x; i < x + sprite.Width; i++)
+            {
+                for(int j = y; j < y + sprite.Height; j++)
+                {
+                    if(sprite.Functional)
+                        gridFunctional[i, j] = clone;
+                    else
+                        gridDecorative[i, j] = clone;
+                }
+            }
         }
     }
 }

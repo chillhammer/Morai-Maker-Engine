@@ -1,19 +1,27 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.Core;
+using UnityEngine;
 
 namespace Assets.Scripts.UI
 {
     public class CameraController : Singleton<CameraController>
     {
         public bool MouseScroll;
+        public float OffsetX { get { return transform.position.x - minX; } }
         
         private float speed;
-        private float? scrollTarget = 20;
+        private float? scrollTarget;
 
-        private float minX = 0;
-        private float maxX = 200;
+        private float minX;
+        private float maxX;
 
-        public readonly float ACCELERATION = 0.3f;
-        public readonly float DRAG = 0.9f;
+        private readonly float ACCELERATION = 0.3f;
+        private readonly float DRAG = 0.9f;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
+        }
 
         private void FixedUpdate()
         {
@@ -81,6 +89,20 @@ namespace Assets.Scripts.UI
         public void StopScrolling()
         {
             scrollTarget = null;
+        }
+
+        // TODO Static point translation methods
+
+        private void OnGridSizeChanged(int x, int y)
+        {
+            Camera camera = GetComponent<Camera>();
+
+            camera.orthographicSize = (float)y / 2;
+
+            minX = camera.orthographicSize * camera.aspect;
+            maxX = x - minX;
+
+            transform.position = new Vector3(minX, camera.orthographicSize, transform.position.z);
         }
     }
 }
