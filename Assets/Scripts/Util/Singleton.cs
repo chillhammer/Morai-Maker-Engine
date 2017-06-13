@@ -1,20 +1,23 @@
 ﻿using UnityEngine;
 
-public class Singleton<T> : MonoBehaviour where T : Singleton<T>
+namespace Assets.Scripts.Util
 {
-    private static T instance;
-    public static T Instance
+    public class Singleton<T> : MonoBehaviour where T : Singleton<T>
     {
-        get
+        private static T instance;
+        public static T Instance
         {
-            if(instance == null)
-                instance = FindObjectOfType<T>();
-            return instance;
+            get
+            {
+                if(instance == null)
+                    instance = FindObjectOfType<T>();
+                return instance;
+            }
         }
-    }
 
-    protected virtual void Awake()
-    {
-        instance = (T)this;
+        protected virtual void Awake()
+        {
+            instance = (T)this;
+        }
     }
 }

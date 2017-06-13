@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.Util;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.Core
@@ -28,15 +29,34 @@ namespace Assets.Scripts.Core
         {
             base.Awake();
 
-            // Create sprite dictionary
+            // Create sprite dictionary and remove duplicates
             spriteDictionary = new Dictionary<SpriteName, SpriteData>();
-            foreach(SpriteData data in spriteList)
-                spriteDictionary[data.Name] = data;
+            for(int i = 0; i < spriteList.Count; i++)
+            {
+                SpriteData data = spriteList[i];
+                if(spriteDictionary.ContainsKey(data.Name))
+                {
+                    spriteList.RemoveAt(i);
+                    i--;
+                }
+                else
+                {
+                    spriteDictionary[data.Name] = data;
+                }
+            }
         }
 
-        public static SpriteData GetSpriteData(SpriteName sprite)
+        public SpriteData GetSpriteData(SpriteName sprite)
         {
             return Instance.spriteDictionary[sprite];
+        }
+
+        public List<SpriteData> GetSpriteList()
+        {
+            List<SpriteData> clone = new List<SpriteData>();
+            foreach(SpriteData data in spriteList)
+                clone.Add(data);
+            return clone;
         }
     }
 }

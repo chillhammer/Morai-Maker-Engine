@@ -6,15 +6,17 @@ namespace Assets.Scripts.UI
     public class CameraOverview : MonoBehaviour
     {
         [SerializeField]
-        private CameraScroll mainCamera;
-        [SerializeField]
         private LineRenderer outline;
 
         private new Camera camera;
+        private CameraScroll windowScroll;
+        private float outlineHalfWidth;
 
         private void Awake()
         {
+            windowScroll = Camera.main.GetComponent<CameraScroll>();
             camera = GetComponent<Camera>();
+            outlineHalfWidth = outline.widthMultiplier / 2;
             GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
         }
 
@@ -23,7 +25,7 @@ namespace Assets.Scripts.UI
             // Scroll to overview location
             if(Input.GetMouseButton(0) && camera.rect.Contains(new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height)))
             {
-                mainCamera.ScrollImmediate(camera.ScreenToWorldPoint(Input.mousePosition).x);
+                windowScroll.ScrollImmediate(camera.ScreenToWorldPoint(Input.mousePosition).x);
             }
         }
 
@@ -36,10 +38,10 @@ namespace Assets.Scripts.UI
             float windowWidth = Camera.main.aspect * y / 2;
             float windowHeight = (float)y / 2;
             outline.SetPositions(new Vector3[] {
-                new Vector3(-windowWidth, -windowHeight),
-                new Vector3(windowWidth, -windowHeight),
-                new Vector3(windowWidth, windowHeight),
-                new Vector3(-windowWidth, windowHeight)});
+                new Vector3(-windowWidth + outlineHalfWidth, -windowHeight + outlineHalfWidth),
+                new Vector3(windowWidth - outlineHalfWidth, -windowHeight + outlineHalfWidth),
+                new Vector3(windowWidth - outlineHalfWidth, windowHeight - outlineHalfWidth),
+                new Vector3(-windowWidth + outlineHalfWidth, windowHeight - outlineHalfWidth)});
         }
     }
 }

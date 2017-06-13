@@ -19,7 +19,6 @@ namespace Assets.Scripts.Core
             Sprite = data;
             image.sprite = data.Sprite;
             ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
-
             // TODO Stretching
         }
 
