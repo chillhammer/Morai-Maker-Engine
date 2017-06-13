@@ -27,12 +27,5 @@ namespace Assets.Scripts.Core
         {
             transform.position = new Vector2(x + (float)Sprite.Width / 2, y + (float)Sprite.Height / 2);
         }
-
-        public void SetAlpha(float alpha)
-        {
-            Color temp = image.color;
-            temp.a = alpha;
-            image.color = temp;
-        }
     }
 }

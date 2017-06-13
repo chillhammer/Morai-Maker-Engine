@@ -7,12 +7,8 @@ using UnityEngine;
 public class GridPlacement : Singleton<GridPlacement>
 {
     public SpriteData CurrentSprite;
-    
-    [SerializeField]
-    private GridObject gridObjectPrefab;
-    [SerializeField]
-    private Transform gridObjectParent;
 
+    [SerializeField]
     private GridObject previewObject;
 
     private void Start()
@@ -20,11 +16,7 @@ public class GridPlacement : Singleton<GridPlacement>
         CurrentSprite = SpriteManager.GetSpriteData(SpriteName.Tree);
 
         // Create preview object
-        previewObject = Instantiate(gridObjectPrefab, gridObjectParent);
-        previewObject.name = "PreviewObject";
         previewObject.SetSprite(CurrentSprite);
-        previewObject.SetAlpha(0.5f);
-        previewObject.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -60,5 +52,9 @@ public class GridPlacement : Singleton<GridPlacement>
             else if(GridManager.Instance.ContainsGridObject(false, x, y))
                 GridManager.Instance.RemoveGridObject(false, x, y);
         }
+
+        // TODO Temporary - Switch current sprite
+        if(Input.GetMouseButtonDown(2))
+            CurrentSprite = SpriteManager.GetSpriteData(CurrentSprite.Name == SpriteName.Ground ? SpriteName.Tree : SpriteName.Ground);
     }
 }

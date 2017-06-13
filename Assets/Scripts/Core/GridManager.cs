@@ -14,7 +14,9 @@ namespace Assets.Scripts.Core
         [SerializeField]
         private GridObject gridObjectPrefab;
         [SerializeField]
-        private Transform gridObjectParent;
+        private Transform gridObjectParentFunctional;
+        [SerializeField]
+        private Transform gridObjectParentDecorative;
 
         private GridObject[,] gridFunctional;
         private GridObject[,] gridDecorative;
@@ -61,7 +63,7 @@ namespace Assets.Scripts.Core
                 return;
 
             // Instantiate object
-            GridObject clone = Instantiate(gridObjectPrefab, gridObjectParent);
+            GridObject clone = Instantiate(gridObjectPrefab, sprite.Functional ? gridObjectParentFunctional : gridObjectParentDecorative);
             clone.SetSprite(sprite);
             clone.SetPosition(x, y);
 
