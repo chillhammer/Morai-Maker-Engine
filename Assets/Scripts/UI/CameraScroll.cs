@@ -3,11 +3,13 @@ using UnityEngine;
 
 namespace Assets.Scripts.UI
 {
-    public class CameraController : MonoBehaviour
+    public class CameraScroll : MonoBehaviour
     {
         public bool MouseScroll;
         public float OffsetX { get { return transform.position.x - minX; } }
-        
+
+        private new Camera camera;
+
         private float speed;
         private float? scrollTarget;
 
@@ -19,6 +21,8 @@ namespace Assets.Scripts.UI
 
         private void Awake()
         {
+            camera = GetComponent<Camera>();
+
             GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
         }
 
@@ -91,8 +95,6 @@ namespace Assets.Scripts.UI
 
         private void OnGridSizeChanged(int x, int y)
         {
-            Camera camera = GetComponent<Camera>();
-
             camera.orthographicSize = (float)y / 2;
 
             minX = camera.orthographicSize * camera.aspect;
