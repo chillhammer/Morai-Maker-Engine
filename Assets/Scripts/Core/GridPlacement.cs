@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Core;
-using Assets.Scripts.UI;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,50 +10,76 @@ public class GridPlacement : Singleton<GridPlacement>
     [SerializeField]
     private GridObject previewObject;
 
+    private Vector2 previousMousePosition;
+    private bool? deletionLayer; // Functional if true, decorative if false
+
     private void Start()
     {
         CurrentSprite = SpriteManager.GetSpriteData(SpriteName.Tree);
-
-        // Create preview object
         previewObject.SetSprite(CurrentSprite);
+
+        previousMousePosition = Input.mousePosition;
+        deletionLayer = null;
     }
 
     private void Update()
     {
         // Calculate sprite coordinates for the current mouse position
         Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        int x = Mathf.RoundToInt(mousePosition.x - (float)CurrentSprite.Width / 2);
-        int y = Mathf.RoundToInt(mousePosition.y - (float)CurrentSprite.Height / 2);
+        int x, y;
+
+        // Interpolate between previous and current mouse position
+        for(float i = 0.25f; i <= 1; i += 0.25f)
+        {
+            x = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.x, mousePosition.x, i) - (float)CurrentSprite.Width / 2);
+            y = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.y, mousePosition.y, i) - (float)CurrentSprite.Height / 2);
+
+            // Place new grid object
+            if(GridManager.Instance.CanAddGridObject(CurrentSprite, x, y))
+            {
+                previewObject.gameObject.SetActive(true);
+
+                if(Input.GetMouseButtonDown(0) || (Input.GetMouseButton(0) && CurrentSprite.HoldToPlace))
+                    GridManager.Instance.AddGridObject(CurrentSprite, x, y);
+            }
+            else
+            {
+                previewObject.gameObject.SetActive(false);
+            }
+
+            if(Input.GetMouseButton(1))
+            {
+                // Set deletion layer if not set, prioritizing the functional layer
+                if(deletionLayer == null)
+                {
+                    if(GridManager.Instance.ContainsGridObject(true, x, y))
+                        deletionLayer = true;
+                    else if(GridManager.Instance.ContainsGridObject(false, x, y))
+                        deletionLayer = false;
+                }
+
+                // Remove existing grid object based on deletion layer
+                if(deletionLayer != null)
+                    if(GridManager.Instance.ContainsGridObject(deletionLayer.Value, x, y))
+                        GridManager.Instance.RemoveGridObject(deletionLayer.Value, x, y);
+            }
+        }
 
         // Update preview object
         if(CurrentSprite.Name != previewObject.Sprite.Name)
             previewObject.SetSprite(CurrentSprite);
-        previewObject.SetPosition(x, y);
+        previewObject.SetPosition(Mathf.RoundToInt(mousePosition.x - (float)CurrentSprite.Width / 2),
+                                  Mathf.RoundToInt(mousePosition.y - (float)CurrentSprite.Width / 2));
 
-        // Place new grid object
-        if(GridManager.Instance.CanAddGridObject(CurrentSprite, x, y))
-        {
-            previewObject.gameObject.SetActive(true);
-
-            if(Input.GetMouseButtonDown(0) || (Input.GetMouseButton(0) && CurrentSprite.HoldToPlace))
-                GridManager.Instance.AddGridObject(CurrentSprite, x, y);
-        }
-        else
-        {
-            previewObject.gameObject.SetActive(false);
-        }
-
-        // Remove existing grid object, prioritizing the functional layer
-        if(Input.GetMouseButton(1))
-        {
-            if(GridManager.Instance.ContainsGridObject(true, x, y))
-                GridManager.Instance.RemoveGridObject(true, x, y);
-            else if(GridManager.Instance.ContainsGridObject(false, x, y))
-                GridManager.Instance.RemoveGridObject(false, x, y);
-        }
+        // Remove deletion layer
+        if(Input.GetMouseButtonUp(1))
+            deletionLayer = null;
 
         // TODO Temporary - Switch current sprite
         if(Input.GetMouseButtonDown(2))
             CurrentSprite = SpriteManager.GetSpriteData(CurrentSprite.Name == SpriteName.Ground ? SpriteName.Tree : SpriteName.Ground);
+
+        // Store mouse position
+        previousMousePosition = mousePosition;
     }
 }
