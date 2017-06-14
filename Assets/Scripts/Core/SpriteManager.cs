@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
-    public enum SpriteName { Ground, Tree }
+    public enum SpriteName { Ground, Tree, Cannon, Castle, Cloud }
 
     [System.Serializable]
     public struct SpriteData

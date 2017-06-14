@@ -18,13 +18,15 @@ namespace Assets.Scripts.Core
         [SerializeField]
         private Transform gridObjectParentDecorative;
 
+        [SerializeField]
+        private Vector2 initialGridSize;
+
         private GridObject[,] gridFunctional;
         private GridObject[,] gridDecorative;
-
-        // TODO Temporary
-        protected void Start()
+        
+        private void Start()
         {
-            SetGridSize(100, 20);
+            SetGridSize(Mathf.RoundToInt(initialGridSize.x), Mathf.RoundToInt(initialGridSize.y));
         }
 
         public void SetGridSize(int x, int y)

@@ -26,21 +26,21 @@ namespace Assets.Scripts.Core
         {
             // Calculate sprite coordinates for the current mouse position
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            int x = 0, y = 0;
+            int spriteX = 0, spriteY = 0;
 
             // Interpolate between previous and current mouse position
             for(float i = 0.25f; i <= 1; i += 0.25f)
             {
-                x = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.x, mousePosition.x, i) - (float)CurrentSprite.Width / 2);
-                y = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.y, mousePosition.y, i) - (float)CurrentSprite.Height / 2);
+                spriteX = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.x, mousePosition.x, i) - (float)CurrentSprite.Width / 2);
+                spriteY = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.y, mousePosition.y, i) - (float)CurrentSprite.Height / 2);
 
                 // Place new grid object
-                if(GridManager.Instance.CanAddGridObject(CurrentSprite, x, y))
+                if(GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY))
                 {
                     previewObject.gameObject.SetActive(true);
 
-                    if(Input.GetMouseButtonDown(0) || (Input.GetMouseButton(0) && CurrentSprite.HoldToPlace))
-                        GridManager.Instance.AddGridObject(CurrentSprite, x, y);
+                    if((Input.GetMouseButtonDown(0) || (Input.GetMouseButton(0) && CurrentSprite.HoldToPlace)) && !Input.GetMouseButton(1))
+                        GridManager.Instance.AddGridObject(CurrentSprite, spriteX, spriteY);
                 }
                 else
                 {
@@ -49,26 +49,29 @@ namespace Assets.Scripts.Core
 
                 if(Input.GetMouseButton(1))
                 {
+                    int mouseX = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.x, mousePosition.x, i) - 0.5f);
+                    int mouseY = Mathf.RoundToInt(Mathf.Lerp(previousMousePosition.y, mousePosition.y, i) - 0.5f);
+
                     // Set deletion layer if not set, prioritizing the functional layer
                     if(deletionLayer == null)
                     {
-                        if(GridManager.Instance.ContainsGridObject(true, x, y))
+                        if(GridManager.Instance.ContainsGridObject(true, mouseX, mouseY))
                             deletionLayer = true;
-                        else if(GridManager.Instance.ContainsGridObject(false, x, y))
+                        else if(GridManager.Instance.ContainsGridObject(false, mouseX, mouseY))
                             deletionLayer = false;
                     }
 
                     // Remove existing grid object based on deletion layer
                     if(deletionLayer != null)
-                        if(GridManager.Instance.ContainsGridObject(deletionLayer.Value, x, y))
-                            GridManager.Instance.RemoveGridObject(deletionLayer.Value, x, y);
+                        if(GridManager.Instance.ContainsGridObject(deletionLayer.Value, mouseX, mouseY))
+                            GridManager.Instance.RemoveGridObject(deletionLayer.Value, mouseX, mouseY);
                 }
             }
 
             // Update preview object
             if(CurrentSprite.Name != previewObject.Sprite.Name)
                 previewObject.SetSprite(CurrentSprite);
-            previewObject.SetPosition(x, y);
+            previewObject.SetPosition(spriteX, spriteY);
 
             // Remove deletion layer
             if(Input.GetMouseButtonUp(1))
