@@ -16,6 +16,9 @@ namespace Assets.Scripts.UI
         [SerializeField]
         private Outline outline;
 
+        private Vector2 baseSize;
+        private Vector2 baseOutlineDistance;
+
         public void Initialize(SpriteMenu menu, SpriteData data)
         {
             SpriteMenu = menu;
@@ -23,11 +26,28 @@ namespace Assets.Scripts.UI
 
             // Initialize sprite image
             image.sprite = data.Sprite;
-            ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
-            // TODO Stretching
+            if(data.Stretch)
+            {
+                ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
+            }
+            else
+            {
+                float scale = Mathf.Min(data.Width / data.Sprite.bounds.size.x, data.Height / data.Sprite.bounds.size.y);
+                ((RectTransform)transform).sizeDelta = scale * data.Sprite.bounds.size;
+            }
+
+            // Store defaults
+            baseSize = ((RectTransform)transform).sizeDelta;
+            baseOutlineDistance = outline.effectDistance;
 
             // Set button response
             button.onClick.AddListener(delegate { SpriteMenu.SelectSprite(this); });
+        }
+
+        public void SetScale(float scale)
+        {
+            ((RectTransform)transform).sizeDelta = baseSize * scale;
+            outline.effectDistance = new Vector2(baseOutlineDistance.x * scale, baseOutlineDistance.y * scale);
         }
 
         public void SetOutline(bool enabled)

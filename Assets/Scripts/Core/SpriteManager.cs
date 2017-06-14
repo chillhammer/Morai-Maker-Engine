@@ -50,6 +50,15 @@ namespace Assets.Scripts.Core
             return Instance.spriteDictionary[spriteName];
         }
 
+        public List<SpriteData> GetSpriteList(string tag)
+        {
+            List<SpriteData> clone = new List<SpriteData>();
+            foreach(SpriteData data in spriteList)
+                if(data.Tag.Equals(tag))
+                    clone.Add(data);
+            return clone;
+        }
+
         public List<SpriteData> GetSpriteList()
         {
             List<SpriteData> clone = new List<SpriteData>();

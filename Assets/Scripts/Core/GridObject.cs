@@ -18,8 +18,15 @@ namespace Assets.Scripts.Core
         {
             Sprite = data;
             image.sprite = data.Sprite;
-            ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
-            // TODO Stretching
+            if(data.Stretch)
+            {
+                ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
+            }
+            else
+            {
+                float scale = Mathf.Min(data.Width / data.Sprite.bounds.size.x, data.Height / data.Sprite.bounds.size.y);
+                ((RectTransform)transform).sizeDelta = scale * data.Sprite.bounds.size;
+            }
         }
 
         public void SetPosition(int x, int y)
