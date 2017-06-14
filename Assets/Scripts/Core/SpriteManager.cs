@@ -4,12 +4,11 @@ using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
-    public enum SpriteName { Ground, Tree, Cannon, Castle, Cloud }
-
     [System.Serializable]
     public struct SpriteData
     {
-        public SpriteName Name;
+        public string Name;
+        public string Tag;
         public Sprite Sprite;
         public bool Stretch;
         
@@ -23,14 +22,14 @@ namespace Assets.Scripts.Core
     {
         [SerializeField]
         private List<SpriteData> spriteList;
-        private Dictionary<SpriteName, SpriteData> spriteDictionary;
+        private Dictionary<string, SpriteData> spriteDictionary;
 
         protected override void Awake()
         {
             base.Awake();
 
             // Create sprite dictionary and remove duplicates
-            spriteDictionary = new Dictionary<SpriteName, SpriteData>();
+            spriteDictionary = new Dictionary<string, SpriteData>();
             for(int i = 0; i < spriteList.Count; i++)
             {
                 SpriteData data = spriteList[i];
@@ -46,9 +45,9 @@ namespace Assets.Scripts.Core
             }
         }
 
-        public SpriteData GetSpriteData(SpriteName sprite)
+        public SpriteData GetSpriteData(string spriteName)
         {
-            return Instance.spriteDictionary[sprite];
+            return Instance.spriteDictionary[spriteName];
         }
 
         public List<SpriteData> GetSpriteList()

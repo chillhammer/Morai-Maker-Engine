@@ -6,7 +6,17 @@ namespace Assets.Scripts.UI
     public class CameraScroll : MonoBehaviour
     {
         public bool MouseScroll;
-        public float OffsetX { get { return transform.position.x - minX; } }
+
+        [SerializeField]
+        private Rect scrollLeft;
+        [SerializeField]
+        private Rect scrollRight;
+        [SerializeField]
+        private float acceleration;
+        [SerializeField]
+        private float drag;
+        [SerializeField]
+        private bool matchGridSize;
 
         private new Camera camera;
 
@@ -16,14 +26,12 @@ namespace Assets.Scripts.UI
         private float minX;
         private float maxX;
 
-        private readonly float ACCELERATION = 0.3f;
-        private readonly float DRAG = 0.9f;
-
         private void Awake()
         {
             camera = GetComponent<Camera>();
 
-            GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
+            if(matchGridSize)
+                GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
         }
 
         private void FixedUpdate()
@@ -36,19 +44,19 @@ namespace Assets.Scripts.UI
             else if(MouseScroll)
             {
                 // Calculating new camera speed
-                float border = Screen.width / 6;
-                if(Input.mousePosition.x > Screen.width - border)
+                Vector2 mousePosition = new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height);
+                if(scrollLeft.Contains(mousePosition))
                 {
-                    float ratio = Mathf.InverseLerp(Screen.width - border, Screen.width, Input.mousePosition.x);
-                    speed += ratio * ratio * ACCELERATION;
+                    float ratio = Mathf.InverseLerp(scrollLeft.xMax, scrollLeft.xMin, mousePosition.x);
+                    speed -= ratio * ratio * acceleration;
                 }
-                else if(Input.mousePosition.x < border)
+                else if(scrollRight.Contains(mousePosition))
                 {
-                    float ratio = Mathf.InverseLerp(border, 0, Input.mousePosition.x);
-                    speed -= ratio * ratio * ACCELERATION;
+                    float ratio = Mathf.InverseLerp(scrollRight.xMin, scrollRight.xMax, mousePosition.x);
+                    speed += ratio * ratio * acceleration;
                 }
 
-                speed *= DRAG;
+                speed *= drag;
 
                 // Scroll the view based on camera speed
                 ScrollImmediate(transform.position.x + speed);
@@ -66,7 +74,8 @@ namespace Assets.Scripts.UI
                 x = maxX;
                 speed = 0;
             }
-            else if(x < minX)
+
+            if(x < minX)
             {
                 x = minX;
                 speed = 0;
@@ -93,14 +102,27 @@ namespace Assets.Scripts.UI
             scrollTarget = null;
         }
 
+        /// <summary>
+        /// Sets the horizontal bounds for the camera based on the camera's orthographic size and aspect ratio.
+        /// </summary>
+        /// <param name="minX">Minimum camera x position</param>
+        /// <param name="maxX">Maximum camera x position</param>
+        public void SetBounds(float minX, float maxX)
+        {
+            // Set new bounds
+            float offsetX = camera.orthographicSize * camera.aspect;
+            this.minX = minX + offsetX;
+            this.maxX = maxX - offsetX;
+
+            // Clamp to new bounds
+            transform.position = new Vector3(Mathf.Clamp(transform.position.x, this.minX, this.maxX), transform.position.y, transform.position.z);
+        }
+
         private void OnGridSizeChanged(int x, int y)
         {
             camera.orthographicSize = (float)y / 2;
-
-            minX = camera.orthographicSize * camera.aspect;
-            maxX = x - minX;
-
-            transform.position = new Vector3(minX, camera.orthographicSize, transform.position.z);
+            transform.position = new Vector3(0, camera.orthographicSize, transform.position.z);
+            SetBounds(0, x);
         }
     }
 }
