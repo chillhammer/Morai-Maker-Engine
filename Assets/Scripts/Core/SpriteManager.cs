@@ -8,62 +8,54 @@ namespace Assets.Scripts.Core
     public struct SpriteData
     {
         public string Name;
-        public string Tag;
         public Sprite Sprite;
-        public bool Stretch;
         
         public int Width;
         public int Height;
+
         public bool Functional;
+        public bool MaintainAspect;
         public bool HoldToPlace;
     }
 
     public class SpriteManager : Singleton<SpriteManager>
     {
+        [System.Serializable]
+        private struct TagData
+        {
+            public string Tag;
+            public List<SpriteData> Sprites;
+        }
+
         [SerializeField]
-        private List<SpriteData> spriteList;
-        private Dictionary<string, SpriteData> spriteDictionary;
+        private List<TagData> tagList;
+        
+        private Dictionary<string, List<SpriteData>> tagDictionary;
 
         protected override void Awake()
         {
             base.Awake();
 
-            // Create sprite dictionary and remove duplicates
-            spriteDictionary = new Dictionary<string, SpriteData>();
-            for(int i = 0; i < spriteList.Count; i++)
-            {
-                SpriteData data = spriteList[i];
-                if(spriteDictionary.ContainsKey(data.Name))
-                {
-                    spriteList.RemoveAt(i);
-                    i--;
-                }
-                else
-                {
-                    spriteDictionary[data.Name] = data;
-                }
-            }
+            // Create tag list / dictionary and remove duplicates
+            tagDictionary = new Dictionary<string, List<SpriteData>>();
+            foreach(TagData tagData in tagList)
+                tagDictionary[tagData.Tag] = tagData.Sprites;
         }
 
-        public SpriteData GetSpriteData(string spriteName)
+        public List<string> GetTagList()
         {
-            return Instance.spriteDictionary[spriteName];
+            List<string> clone = new List<string>();
+            foreach(TagData tagData in tagList)
+                clone.Add(tagData.Tag);
+            return clone;
         }
 
         public List<SpriteData> GetSpriteList(string tag)
         {
             List<SpriteData> clone = new List<SpriteData>();
-            foreach(SpriteData data in spriteList)
-                if(data.Tag.Equals(tag))
+            if(tagDictionary.ContainsKey(tag))
+                foreach(SpriteData data in tagDictionary[tag])
                     clone.Add(data);
-            return clone;
-        }
-
-        public List<SpriteData> GetSpriteList()
-        {
-            List<SpriteData> clone = new List<SpriteData>();
-            foreach(SpriteData data in spriteList)
-                clone.Add(data);
             return clone;
         }
     }

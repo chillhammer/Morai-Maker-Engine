@@ -18,14 +18,14 @@ namespace Assets.Scripts.Core
         {
             Sprite = data;
             image.sprite = data.Sprite;
-            if(data.Stretch)
-            {
-                ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
-            }
-            else
+            if(data.MaintainAspect)
             {
                 float scale = Mathf.Min(data.Width / data.Sprite.bounds.size.x, data.Height / data.Sprite.bounds.size.y);
                 ((RectTransform)transform).sizeDelta = scale * data.Sprite.bounds.size;
+            }
+            else
+            {
+                ((RectTransform)transform).sizeDelta = new Vector2(data.Width, data.Height);
             }
         }
 

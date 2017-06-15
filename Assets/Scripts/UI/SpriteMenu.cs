@@ -19,6 +19,7 @@ namespace Assets.Scripts.UI
         private SpriteMenuObject selectedSprite;
         private bool busy;
 
+        // TODO Temporary
         private void Update()
         {
             if(Input.GetKeyDown(KeyCode.P))
@@ -28,7 +29,7 @@ namespace Assets.Scripts.UI
         private void Start()
         {
             // Calculate max sprite width and height
-            List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList();
+            List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList(SpriteManager.Instance.GetTagList()[0]);
             float maxWidth = 0, maxHeight = 0;
             foreach(SpriteData sprite in sprites)
             {
@@ -41,13 +42,13 @@ namespace Assets.Scripts.UI
             // - Sprite height is weighted towards 10 for more consistent scale between tabs
             float scale = (1 - padding * 2) / ((maxHeight + 10) / 2);
             float spriteX = padding;
-            float spriteY = -0.5f;
+            float spriteY = -1.5f;
 
             // Create a row of menu sprites
             spriteObjects = new List<SpriteMenuObject>();
             foreach(SpriteData sprite in sprites)
             {
-                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + (float)sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent);
+                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent);
                 temp.Initialize(this, sprite);
                 temp.SetScale(scale);
                 spriteObjects.Add(temp);
@@ -96,13 +97,13 @@ namespace Assets.Scripts.UI
             // - Sprite height is weighted towards 10 for more consistent scale between tabs
             float scale = (1 - padding * 2) / ((maxHeight + 10) / 2);
             float spriteX = padding;
-            float spriteY = -1.5f;
+            float spriteY = -0.5f;
 
             // Create a row of menu sprites
             List<SpriteMenuObject> newSpriteObjects = new List<SpriteMenuObject>();
             foreach(SpriteData sprite in sprites)
             {
-                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + (float)sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent);
+                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent);
                 temp.Initialize(this, sprite);
                 temp.SetScale(scale);
                 newSpriteObjects.Add(temp);
@@ -111,9 +112,9 @@ namespace Assets.Scripts.UI
 
             // Scroll in the new row
             float offsetY = 0;
-            for(int i = 0; i < 30; i++)
+            for(int i = 0; i < 20; i++)
             {
-                offsetY = Mathf.Lerp(offsetY, 1, 0.16f);
+                offsetY = Mathf.Lerp(offsetY, -1, 0.2f);
                 foreach(SpriteMenuObject sprite in spriteObjects)
                     sprite.transform.position = new Vector3(sprite.transform.position.x, spriteMenuCamera.transform.position.y + offsetY, sprite.transform.position.z);
                 foreach(SpriteMenuObject sprite in newSpriteObjects)
