@@ -12,6 +12,8 @@ namespace Assets.Scripts.UI
         [SerializeField]
         private SpriteMenu spriteMenu;
 
+        private string currentTab;
+
         private void Start()
         {
             // Generate tabs
@@ -19,7 +21,16 @@ namespace Assets.Scripts.UI
             {
                 Button temp = Instantiate(tabPrefab, transform);
                 temp.GetComponentInChildren<Text>().text = tag;
-                temp.onClick.AddListener(delegate { spriteMenu.SelectTab(tag); });
+                temp.onClick.AddListener(delegate { OnButtonClick(tag); });
+            }
+        }
+
+        private void OnButtonClick(string tag)
+        {
+            if(currentTab == null || !currentTab.Equals(tag))
+            {
+                currentTab = tag;
+                spriteMenu.DisplaySprites(SpriteManager.Instance.GetSpriteList(tag));
             }
         }
     }

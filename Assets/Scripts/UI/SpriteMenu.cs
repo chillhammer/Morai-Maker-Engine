@@ -11,25 +11,21 @@ namespace Assets.Scripts.UI
         [SerializeField]
         private SpriteMenuObject spritePrefab;
         [SerializeField]
-        private Transform spriteParent;
-        [SerializeField]
         private Camera spriteMenuCamera;
 
         private List<SpriteMenuObject> spriteObjects;
         private SpriteMenuObject selectedSprite;
-        private bool busy;
 
-        // TODO Temporary
-        private void Update()
-        {
-            if(Input.GetKeyDown(KeyCode.P))
-                SelectTab(Random.Range(0f, 1f) > 0.5f ? "Block" : "Decor");
-        }
+        private string currentTab;
+        private bool busy;
 
         private void Start()
         {
+            // Get list of sprites for initial tab
+            currentTab = SpriteManager.Instance.GetTagList()[0];
+            List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList(currentTab);
+
             // Calculate max sprite width and height
-            List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList(SpriteManager.Instance.GetTagList()[0]);
             float maxWidth = 0, maxHeight = 0;
             foreach(SpriteData sprite in sprites)
             {
@@ -48,7 +44,7 @@ namespace Assets.Scripts.UI
             spriteObjects = new List<SpriteMenuObject>();
             foreach(SpriteData sprite in sprites)
             {
-                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent);
+                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, transform);
                 temp.Initialize(this, sprite);
                 temp.SetScale(scale);
                 spriteObjects.Add(temp);
@@ -72,19 +68,18 @@ namespace Assets.Scripts.UI
             selectedSprite.SetOutline(true);
         }
 
-        public void SelectTab(string tabName)
+        public void DisplaySprites(List<SpriteData> sprites)
         {
             if(!busy)
-                StartCoroutine(SelectTabCoroutine(tabName));
+                StartCoroutine(DisplaySpritesCoroutine(sprites));
         }
 
-        private IEnumerator SelectTabCoroutine(string tabName)
+        private IEnumerator DisplaySpritesCoroutine(List<SpriteData> sprites)
         {
             busy = true;
             spriteMenuCamera.GetComponent<CameraScroll>().MouseScroll = false;
 
             // Calculate max sprite width and height
-            List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList(tabName);
             float maxWidth = 0, maxHeight = 0;
             foreach(SpriteData sprite in sprites)
             {
@@ -96,14 +91,14 @@ namespace Assets.Scripts.UI
             float padding = 0.2f;
             // - Sprite height is weighted towards 10 for more consistent scale between tabs
             float scale = (1 - padding * 2) / ((maxHeight + 10) / 2);
-            float spriteX = padding;
+            float spriteX = spriteMenuCamera.transform.position.x - spriteMenuCamera.orthographicSize * spriteMenuCamera.aspect + padding;
             float spriteY = -0.5f;
 
             // Create a row of menu sprites
             List<SpriteMenuObject> newSpriteObjects = new List<SpriteMenuObject>();
             foreach(SpriteData sprite in sprites)
             {
-                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent);
+                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, transform);
                 temp.Initialize(this, sprite);
                 temp.SetScale(scale);
                 newSpriteObjects.Add(temp);

@@ -5,7 +5,7 @@ namespace Assets.Scripts.Core
 {
     public class GridObject : MonoBehaviour
     {
-        public SpriteData Sprite { get; private set; }
+        public SpriteData Data { get; private set; }
 
         // Top left corner grid coordinates
         public int X { get; private set; }
@@ -16,7 +16,7 @@ namespace Assets.Scripts.Core
 
         public void SetSprite(SpriteData data)
         {
-            Sprite = data;
+            Data = data;
             image.sprite = data.Sprite;
             if(data.MaintainAspect)
             {
@@ -31,7 +31,7 @@ namespace Assets.Scripts.Core
 
         public void SetPosition(int x, int y)
         {
-            transform.position = new Vector2(x + (float)Sprite.Width / 2, y + (float)Sprite.Height / 2);
+            transform.position = new Vector2(x + (float)Data.Width / 2, y + (float)Data.Height / 2);
         }
     }
 }

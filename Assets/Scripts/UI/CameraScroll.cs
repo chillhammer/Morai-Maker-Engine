@@ -15,8 +15,6 @@ namespace Assets.Scripts.UI
         private float acceleration;
         [SerializeField]
         private float drag;
-        [SerializeField]
-        private bool matchGridSize;
 
         private new Camera camera;
 
@@ -29,8 +27,7 @@ namespace Assets.Scripts.UI
         private void Awake()
         {
             camera = GetComponent<Camera>();
-
-            if(matchGridSize)
+            if(camera == Camera.main)
                 GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
         }
 

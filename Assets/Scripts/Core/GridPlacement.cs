@@ -54,7 +54,7 @@ namespace Assets.Scripts.Core
             }
 
             // Update preview object
-            if(CurrentSprite.Name != previewObject.Sprite.Name)
+            if(CurrentSprite.Sprite != previewObject.Data.Sprite)
                 previewObject.SetSprite(CurrentSprite);
             previewObject.SetPosition(spriteX, spriteY);
             previewObject.gameObject.SetActive(GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY));
