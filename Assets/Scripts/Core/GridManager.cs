@@ -1,5 +1,7 @@
 ﻿using Assets.Scripts.Util;
 using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace Assets.Scripts.Core
@@ -23,14 +25,19 @@ namespace Assets.Scripts.Core
 
         private GridObject[,] gridFunctional;
         private GridObject[,] gridDecorative;
+
+        private List<GridObject> gridObjects;
         
         private void Start()
         {
+            gridObjects = new List<GridObject>();
             SetGridSize(Mathf.RoundToInt(initialGridSize.x), Mathf.RoundToInt(initialGridSize.y));
         }
 
         public void SetGridSize(int x, int y)
         {
+            ClearGrid();
+
             GridWidth = x;
             GridHeight = y;
 
@@ -38,6 +45,13 @@ namespace Assets.Scripts.Core
             gridDecorative = new GridObject[x, y];
 
             GridSizeChanged(x, y);
+        }
+
+        public void ClearGrid()
+        {
+            foreach(GridObject gridObject in gridObjects)
+                Destroy(gridObject.gameObject);
+            gridObjects.Clear();
         }
 
         public bool CanAddGridObject(SpriteData sprite, int x, int y)
@@ -68,6 +82,7 @@ namespace Assets.Scripts.Core
             GridObject clone = Instantiate(gridObjectPrefab, sprite.Functional ? gridObjectParentFunctional : gridObjectParentDecorative);
             clone.SetSprite(sprite);
             clone.SetPosition(x, y);
+            gridObjects.Add(clone);
 
             // Add references to object in grid
             for(int i = x; i < x + sprite.Width; i++)
@@ -87,8 +102,11 @@ namespace Assets.Scripts.Core
             if(!ContainsGridObject(functional, x, y))
                 return;
 
-            // Automatically removes all references in grid
-            Destroy((functional ? gridFunctional[x, y] : gridDecorative[x, y]).gameObject);
+            // Remove the grid object
+            GridObject gridObject = (functional ? gridFunctional[x, y] : gridDecorative[x, y]);
+            gridObjects.Remove(gridObject);
+            // - Automatically removes all references in grid
+            Destroy(gridObject.gameObject);
         }
 
         public bool ContainsGridObject(bool functional, int x, int y)
@@ -99,6 +117,15 @@ namespace Assets.Scripts.Core
                 return false;
 
             return (functional ? gridFunctional[x, y] : gridDecorative[x, y]) != null;
+        }
+
+        public string FormatToCSV()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(GridWidth + "," + GridHeight);
+            foreach(GridObject gridObject in gridObjects)
+                builder.AppendLine(gridObject.Data.Name + "," + gridObject.X + "," + gridObject.Y);
+            return builder.ToString();
         }
     }
 }

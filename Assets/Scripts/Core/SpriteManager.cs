@@ -31,23 +31,26 @@ namespace Assets.Scripts.Core
         private List<TagData> tagList;
         
         private Dictionary<string, List<SpriteData>> tagDictionary;
+        private Dictionary<string, SpriteData> spriteDictionary;
 
         protected override void Awake()
         {
             base.Awake();
 
-            // Create tag list / dictionary and remove duplicates
+            // Initialize sprite cache
             tagDictionary = new Dictionary<string, List<SpriteData>>();
+            spriteDictionary = new Dictionary<string, SpriteData>();
             foreach(TagData tagData in tagList)
+            {
                 tagDictionary[tagData.Tag] = tagData.Sprites;
+                foreach(SpriteData sprite in tagData.Sprites)
+                    spriteDictionary[sprite.Name] = sprite;
+            }
         }
 
-        public List<string> GetTagList()
+        public SpriteData GetSprite(string name)
         {
-            List<string> clone = new List<string>();
-            foreach(TagData tagData in tagList)
-                clone.Add(tagData.Tag);
-            return clone;
+            return spriteDictionary[name];
         }
 
         public List<SpriteData> GetSpriteList(string tag)
@@ -56,6 +59,14 @@ namespace Assets.Scripts.Core
             if(tagDictionary.ContainsKey(tag))
                 foreach(SpriteData data in tagDictionary[tag])
                     clone.Add(data);
+            return clone;
+        }
+
+        public List<string> GetTagList()
+        {
+            List<string> clone = new List<string>();
+            foreach(TagData tagData in tagList)
+                clone.Add(tagData.Tag);
             return clone;
         }
     }

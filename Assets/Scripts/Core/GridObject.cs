@@ -31,6 +31,9 @@ namespace Assets.Scripts.Core
 
         public void SetPosition(int x, int y)
         {
+            X = x;
+            Y = y;
+
             transform.position = new Vector2(x + (float)Data.Width / 2, y + (float)Data.Height / 2);
         }
     }
