@@ -41,7 +41,7 @@ namespace Assets.Scripts.UI
             baseOutlineDistance = outline.effectDistance;
 
             // Set button response
-            button.onClick.AddListener(delegate { SpriteMenu.SelectSprite(this); });
+            button.onClick.AddListener(() => SpriteMenu.SelectSprite(this));
         }
 
         public void SetScale(float scale)

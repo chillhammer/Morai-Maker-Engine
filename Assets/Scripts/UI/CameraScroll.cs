@@ -8,6 +8,9 @@ namespace Assets.Scripts.UI
         public bool MouseScroll;
 
         [SerializeField]
+        private DialogueMenu dialogueMenu;
+
+        [SerializeField]
         private Rect scrollLeft;
         [SerializeField]
         private Rect scrollRight;
@@ -16,7 +19,7 @@ namespace Assets.Scripts.UI
         [SerializeField]
         private float drag;
 
-        private new Camera camera;
+        private Camera camera;
 
         private float speed;
         private float? scrollTarget;
@@ -29,6 +32,9 @@ namespace Assets.Scripts.UI
             camera = GetComponent<Camera>();
             if(camera == Camera.main)
                 GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
+
+            dialogueMenu.DialogueOpened += () => MouseScroll = false;
+            dialogueMenu.DialogueClosed += () => MouseScroll = true;
         }
 
         private void FixedUpdate()
@@ -117,6 +123,7 @@ namespace Assets.Scripts.UI
 
         private void OnGridSizeChanged(int x, int y)
         {
+            speed = 0;
             camera.orthographicSize = (float)y / 2;
             transform.position = new Vector3(0, camera.orthographicSize, transform.position.z);
             SetBounds(0, x);

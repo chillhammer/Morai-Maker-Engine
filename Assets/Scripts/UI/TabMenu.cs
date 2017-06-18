@@ -21,7 +21,7 @@ namespace Assets.Scripts.UI
             {
                 Button temp = Instantiate(tabPrefab, transform);
                 temp.GetComponentInChildren<Text>().text = tag;
-                temp.onClick.AddListener(delegate { OnButtonClick(tag); });
+                temp.onClick.AddListener(() => OnButtonClick(tag));
             }
         }
 
