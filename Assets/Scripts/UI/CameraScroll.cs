@@ -5,8 +5,6 @@ namespace Assets.Scripts.UI
 {
     public class CameraScroll : MonoBehaviour
     {
-        public bool MouseScroll;
-
         [SerializeField]
         private DialogueMenu dialogueMenu;
 
@@ -27,14 +25,16 @@ namespace Assets.Scripts.UI
         private float minX;
         private float maxX;
 
+        private int cameraLock;
+
         private void Awake()
         {
             camera = GetComponent<Camera>();
             if(camera == Camera.main)
                 GridManager.Instance.GridSizeChanged += OnGridSizeChanged;
 
-            dialogueMenu.DialogueOpened += () => MouseScroll = false;
-            dialogueMenu.DialogueClosed += () => MouseScroll = true;
+            dialogueMenu.DialogueOpened += AddLock;
+            dialogueMenu.DialogueClosed += RemoveLock;
         }
 
         private void FixedUpdate()
@@ -44,7 +44,7 @@ namespace Assets.Scripts.UI
                 // Scroll the view based on scroll target position
                 ScrollImmediate(Mathf.Lerp(transform.position.x, scrollTarget.Value, 0.1f));
             }
-            else if(MouseScroll)
+            else if(cameraLock == 0)
             {
                 // Calculating new camera speed
                 Vector2 mousePosition = new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height);
@@ -119,6 +119,16 @@ namespace Assets.Scripts.UI
 
             // Clamp to new bounds
             transform.position = new Vector3(Mathf.Clamp(transform.position.x, this.minX, this.maxX), transform.position.y, transform.position.z);
+        }
+
+        public void AddLock()
+        {
+            cameraLock += 1;
+        }
+
+        public void RemoveLock()
+        {
+            cameraLock -= 1;
         }
 
         private void OnGridSizeChanged(int x, int y)

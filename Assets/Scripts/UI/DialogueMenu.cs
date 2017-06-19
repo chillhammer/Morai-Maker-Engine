@@ -62,26 +62,26 @@ namespace Assets.Scripts.UI
             if(activeDialogue.HasValue)
                 CloseDialogue();
 
-            background.gameObject.SetActive(true);
+            background.SetActive(true);
             switch(dialogue)
             {
                 case Dialogue.RunLevel:
-                    runLevelPrompt.gameObject.SetActive(true);
+                    runLevelPrompt.SetActive(true);
                     break;
                 case Dialogue.LoadLevel:
-                    loadLevelPrompt.gameObject.SetActive(true);
+                    loadLevelPrompt.SetActive(true);
                     break;
                 case Dialogue.ClearLevel:
-                    clearLevelPrompt.gameObject.SetActive(true);
+                    clearLevelPrompt.SetActive(true);
                     break;
                 case Dialogue.OptionsMenu:
-                    optionsPrompt.gameObject.SetActive(true);
+                    optionsPrompt.SetActive(true);
                     break;
                 case Dialogue.LevelName:
-                    levelNamePrompt.gameObject.SetActive(true);
+                    levelNamePrompt.SetActive(true);
                     break;
                 case Dialogue.Exit:
-                    exitPrompt.gameObject.SetActive(true);
+                    exitPrompt.SetActive(true);
                     break;
             }
 
@@ -94,26 +94,26 @@ namespace Assets.Scripts.UI
             if(!activeDialogue.HasValue)
                 return;
 
-            background.gameObject.SetActive(false);
+            background.SetActive(false);
             switch(activeDialogue.Value)
             {
                 case Dialogue.RunLevel:
-                    runLevelPrompt.gameObject.SetActive(false);
+                    runLevelPrompt.SetActive(false);
                     break;
                 case Dialogue.LoadLevel:
-                    loadLevelPrompt.gameObject.SetActive(false);
+                    loadLevelPrompt.SetActive(false);
                     break;
                 case Dialogue.ClearLevel:
-                    clearLevelPrompt.gameObject.SetActive(false);
+                    clearLevelPrompt.SetActive(false);
                     break;
                 case Dialogue.OptionsMenu:
-                    optionsPrompt.gameObject.SetActive(false);
+                    optionsPrompt.SetActive(false);
                     break;
                 case Dialogue.LevelName:
-                    levelNamePrompt.gameObject.SetActive(false);
+                    levelNamePrompt.SetActive(false);
                     break;
                 case Dialogue.Exit:
-                    exitPrompt.gameObject.SetActive(false);
+                    exitPrompt.SetActive(false);
                     break;
             }
 

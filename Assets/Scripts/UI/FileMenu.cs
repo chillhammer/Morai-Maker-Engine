@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Core;
-using Assets.Scripts.UI;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,7 +13,7 @@ namespace Assets.Scripts.UI
         private OptionsMenu optionsMenu;
 
         [SerializeField]
-        private Text loadLevelText;
+        private InputField loadLevelInput;
 
         public void OnRun()
         {
@@ -29,7 +28,7 @@ namespace Assets.Scripts.UI
 
         public void OnLoad()
         {
-            string newLevelName = loadLevelText.text.ToLower().Replace(' ', '_');
+            string newLevelName = loadLevelInput.text.ToLower().Replace(' ', '_');
             string filePath = Application.dataPath + "/" + newLevelName + ".csv";
 
             if(File.Exists(filePath))
@@ -55,11 +54,6 @@ namespace Assets.Scripts.UI
         public void OnClear()
         {
             GridManager.Instance.ClearGrid();
-        }
-
-        public void OnOptions()
-        {
-
         }
 
         public void OnExit()

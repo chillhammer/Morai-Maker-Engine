@@ -77,7 +77,7 @@ namespace Assets.Scripts.UI
         private IEnumerator DisplaySpritesCoroutine(List<SpriteData> sprites)
         {
             busy = true;
-            spriteMenuCamera.GetComponent<CameraScroll>().MouseScroll = false;
+            spriteMenuCamera.GetComponent<CameraScroll>().AddLock();
 
             // Calculate max sprite width and height
             float maxWidth = 0, maxHeight = 0;
@@ -131,7 +131,7 @@ namespace Assets.Scripts.UI
             spriteObjects = newSpriteObjects;
 
             busy = false;
-            spriteMenuCamera.GetComponent<CameraScroll>().MouseScroll = true;
+            spriteMenuCamera.GetComponent<CameraScroll>().RemoveLock();
         }
     }
 }

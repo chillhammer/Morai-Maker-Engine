@@ -16,48 +16,67 @@ namespace Assets.Scripts.UI
         [SerializeField]
         private Image hoverScrollIcon;
         [SerializeField]
-        private Text levelNameText;
+        private InputField levelNameInput;
 
         [SerializeField]
         private Sprite iconCheck;
         [SerializeField]
         private Sprite iconCross;
 
+        private bool placeholderGridView;
+        private bool placeholderHoverScroll;
+
         public void Awake()
         {
             // Initialize options to defaults
             GridView = true;
-            gridViewIcon.sprite = iconCheck;
-
             HoverScroll = true;
-            hoverScrollIcon.sprite = iconCheck;
-
-            SetLevelName("level");
+            LevelName = "level";
+            ResetPlaceholderOptions();
         }
 
         public void ToggleGridView()
         {
-            // TODO
-            GridView = !GridView;
-            gridViewIcon.sprite = GridView ? iconCheck : iconCross;
+            placeholderGridView = !placeholderGridView;
+            gridViewIcon.sprite = placeholderGridView ? iconCheck : iconCross;
         }
 
         public void ToggleHoverScroll()
         {
-            // TODO
-            HoverScroll = !HoverScroll;
-            hoverScrollIcon.sprite = HoverScroll ? iconCheck : iconCross;
+            placeholderHoverScroll = !placeholderHoverScroll;
+            hoverScrollIcon.sprite = placeholderHoverScroll ? iconCheck : iconCross;
         }
 
-        public void OnLevelName()
+        public void SavePlaceholderOptions()
         {
-            SetLevelName(levelNameText.text);
+            // Apply the options
+            // TODO GridView
+            if(HoverScroll && !placeholderHoverScroll)
+                Camera.main.GetComponent<CameraScroll>().AddLock();
+            else if(!HoverScroll && placeholderHoverScroll)
+                Camera.main.GetComponent<CameraScroll>().RemoveLock();
+
+            // Save the options
+            GridView = placeholderGridView;
+            HoverScroll = placeholderHoverScroll;
+            LevelName = levelNameInput.text.ToLower().Replace(' ', '_');
+        }
+
+        public void ResetPlaceholderOptions()
+        {
+            placeholderGridView = GridView;
+            placeholderHoverScroll = HoverScroll;
+
+            gridViewIcon.sprite = GridView ? iconCheck : iconCross;
+            hoverScrollIcon.sprite = HoverScroll ? iconCheck : iconCross;
+
+            levelNameInput.text = LevelName;
         }
 
         public void SetLevelName(string levelName)
         {
             LevelName = levelName.ToLower().Replace(' ', '_');
-            levelNameText.text = LevelName;
+            levelNameInput.text = LevelName;
         }
     }
 }
