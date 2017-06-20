@@ -24,9 +24,7 @@ namespace Assets.Scripts.UI
         {
             // Scroll to overview location
             if(Input.GetMouseButton(0) && camera.rect.Contains(new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height)))
-            {
                 windowScroll.ScrollImmediate(camera.ScreenToWorldPoint(Input.mousePosition).x);
-            }
         }
 
         private void OnGridSizeChanged(int x, int y)

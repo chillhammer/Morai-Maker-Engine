@@ -17,7 +17,7 @@ namespace Assets.Scripts.UI
         [SerializeField]
         private float drag;
 
-        private Camera camera;
+        private new Camera camera;
 
         private float speed;
         private float? scrollTarget;

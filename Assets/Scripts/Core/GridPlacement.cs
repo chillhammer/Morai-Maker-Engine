@@ -91,7 +91,7 @@ namespace Assets.Scripts.Core
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            // Prevents off-screen mouse interpolation
+            previewObject.gameObject.SetActive(false);
             previousMousePosition = null;
         }
     }

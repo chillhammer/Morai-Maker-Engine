@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Core;
+using System.Diagnostics;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,19 +18,41 @@ namespace Assets.Scripts.UI
 
         public void OnRun()
         {
+            // Write level representation to Java file
+            File.WriteAllText(Application.dataPath + "/StreamingAssets/src/dk/itu/mario/level/MyLevel.java", GridManager.Instance.FormatToJava());
 
+            // Recompile the simulator
+            Process process = new Process();
+            process.StartInfo.FileName = "python";
+            process.StartInfo.Arguments = "run.py";
+            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets";
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
+            process.Start();
+            process.WaitForExit();
+            process.Close();
+
+            // Run the simulator
+            process = new Process();
+            process.StartInfo.FileName = "java";
+            process.StartInfo.Arguments = "-cp bin dk.itu.mario.engine.PlayCustomized";
+            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets";
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
+            process.Start();
+            process.Close();
         }
 
         public void OnSave()
         {
             string fileName = optionsMenu.LevelName + ".csv";
-            File.WriteAllText(Application.dataPath + "/" + fileName, GridManager.Instance.FormatToCSV());
+            File.WriteAllText(Application.dataPath + "/StreamingAssets/" + fileName, GridManager.Instance.FormatToCSV());
         }
 
         public void OnLoad()
         {
             string newLevelName = loadLevelInput.text.ToLower().Replace(' ', '_');
-            string filePath = Application.dataPath + "/" + newLevelName + ".csv";
+            string filePath = Application.dataPath + "/StreamingAssets/" + newLevelName + ".csv";
 
             if(File.Exists(filePath))
             {

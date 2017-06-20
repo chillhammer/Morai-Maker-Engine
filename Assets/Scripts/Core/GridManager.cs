@@ -122,9 +122,144 @@ namespace Assets.Scripts.Core
         public string FormatToCSV()
         {
             StringBuilder builder = new StringBuilder();
+
             builder.AppendLine(GridWidth + "," + GridHeight);
             foreach(GridObject gridObject in gridObjects)
                 builder.AppendLine(gridObject.Data.Name + "," + gridObject.X + "," + gridObject.Y);
+
+            return builder.ToString();
+        }
+
+        public string FormatToJava()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.AppendLine("package dk.itu.mario.level;");
+            builder.AppendLine("");
+            builder.AppendLine("import java.util.Random;");
+            builder.AppendLine("");
+            builder.AppendLine("import dk.itu.mario.MarioInterface.Constraints;");
+            builder.AppendLine("import dk.itu.mario.MarioInterface.GamePlay;");
+            builder.AppendLine("import dk.itu.mario.MarioInterface.LevelInterface;");
+            builder.AppendLine("import dk.itu.mario.engine.sprites.SpriteTemplate;");
+            builder.AppendLine("import dk.itu.mario.engine.sprites.Enemy;");
+            builder.AppendLine("");
+            builder.AppendLine("public class MyLevel extends Level");
+            builder.AppendLine("{");
+            builder.AppendLine("    private static long lastSeed;");
+            builder.AppendLine("    private static Random levelSeedRandom;");
+            builder.AppendLine("");
+            builder.AppendLine("    private int difficulty;");
+            builder.AppendLine("    private int type;");
+            builder.AppendLine("");
+            builder.AppendLine("    public MyLevel(int width, int height)");
+            builder.AppendLine("    {");
+            builder.AppendLine("        super(width, height);");
+            builder.AppendLine("    }");
+            builder.AppendLine("");
+            builder.AppendLine("    public MyLevel(int width, int height, long seed, int difficulty, int type, GamePlay playerMetrics)");
+            builder.AppendLine("    {");
+            builder.AppendLine("        this(width, height);");
+            builder.AppendLine("        this.difficulty = difficulty;");
+            builder.AppendLine("        this.type = type;");
+            builder.AppendLine("        lastSeed = seed;");
+            builder.AppendLine("        levelSeedRandom = new Random(seed);");
+            builder.AppendLine("");
+
+            // Add objects and calculate exit location
+            int[] exit = new int[] { 0, 0 };
+            foreach(GridObject gridObject in gridObjects)
+            {
+                string mapping = null;
+                bool enemy = false;
+
+                int width = gridObject.Data.Width;
+                int height = gridObject.Data.Height;
+
+                switch(gridObject.Data.Mapping)
+                {
+                    case SimulatorObject.Ground:
+                        mapping = "GROUND";
+                        if(gridObject.X > exit[0] || (gridObject.X == exit[0] && gridObject.Y > exit[1]))
+                            exit = new int[] { gridObject.X + gridObject.Data.Width - 2, gridObject.Y + gridObject.Data.Height };
+                        break;
+                    case SimulatorObject.Block:
+                        mapping = "BLOCK_EMPTY";
+                        if(gridObject.X > exit[0] || (gridObject.X == exit[0] && gridObject.Y > exit[1]))
+                            exit = new int[] { gridObject.X + gridObject.Data.Width - 2, gridObject.Y + gridObject.Data.Height };
+                        break;
+                    case SimulatorObject.Coin:
+                        mapping = "COIN";
+                        break;
+                    case SimulatorObject.Goomba:
+                        mapping = "ENEMY_GOOMBA";
+                        enemy = true;
+                        width = 1;
+                        height = 1;
+                        break;
+                    case SimulatorObject.Koopa:
+                        mapping = "ENEMY_GREEN_KOOPA";
+                        enemy = true;
+                        width = 1;
+                        height = 1;
+                        break;
+                }
+
+                if(mapping != null)
+                {
+                    for(int i = 0; i < width; i++)
+                    {
+                        for(int j = 0; j < height; j++)
+                        {
+                            StringBuilder subBuilder = new StringBuilder();
+                            subBuilder.Append("        ");
+                            subBuilder.Append(enemy ? "setSpriteTemplate(" : "setBlock(");
+                            subBuilder.Append((gridObject.X + i) + ", " + (GridHeight - gridObject.Y - j - 1) + ", ");
+                            subBuilder.Append(enemy ? "new SpriteTemplate(Enemy." : "");
+                            subBuilder.Append(mapping);
+                            subBuilder.Append(enemy ? ", false)" : "");
+                            subBuilder.Append(");");
+                            builder.AppendLine(subBuilder.ToString());
+                        }
+                    }
+                }
+            }
+
+            // Add hill tops
+            for(int i = 0; i < GridWidth; i++)
+            {
+                bool prevGround = false;
+                for(int j = GridHeight - 1; j >= 0; j--)
+                {
+                    GridObject gridObject = gridFunctional[i, j];
+                    if(gridObject != null && gridObject.Data.Mapping == SimulatorObject.Ground)
+                    {
+                        if(!prevGround)
+                        {
+                            StringBuilder subBuilder = new StringBuilder();
+                            subBuilder.Append("        setBlock(");
+                            subBuilder.Append(i + ", " + (GridHeight - j - 1) + ", ");
+                            subBuilder.Append("HILL_TOP);");
+                            builder.AppendLine(subBuilder.ToString());
+
+                            prevGround = true;
+                        }
+                    }
+                    else
+                    {
+                        prevGround = false;
+                    }
+                }
+            }
+
+            // Add exit location
+            builder.AppendLine("");
+            builder.AppendLine("        xExit = " + exit[0] + ";");
+            builder.AppendLine("        yExit = " + (GridHeight - exit[1]) + ";");
+
+            builder.AppendLine("    }");
+            builder.AppendLine("}");
+
             return builder.ToString();
         }
     }

@@ -4,11 +4,14 @@ using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
+    public enum SimulatorObject { None, Ground, Block, Coin, Goomba, Koopa }
+
     [System.Serializable]
     public struct SpriteData
     {
         public string Name;
         public Sprite Sprite;
+        public SimulatorObject Mapping;
         
         public int Width;
         public int Height;
