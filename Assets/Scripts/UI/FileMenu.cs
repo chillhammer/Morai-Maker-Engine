@@ -19,13 +19,13 @@ namespace Assets.Scripts.UI
         public void OnRun()
         {
             // Write level representation to Java file
-            File.WriteAllText(Application.dataPath + "/StreamingAssets/src/dk/itu/mario/level/MyLevel.java", GridManager.Instance.FormatToJava());
+            File.WriteAllText(Application.dataPath + "/StreamingAssets/Simulator/src/dk/itu/mario/level/MyLevel.java", GridManager.Instance.FormatToJava());
 
             // Recompile the simulator
             Process process = new Process();
             process.StartInfo.FileName = "python";
             process.StartInfo.Arguments = "run.py";
-            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets";
+            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets/Simulator";
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.UseShellExecute = false;
             process.Start();
@@ -36,7 +36,7 @@ namespace Assets.Scripts.UI
             process = new Process();
             process.StartInfo.FileName = "java";
             process.StartInfo.Arguments = "-cp bin dk.itu.mario.engine.PlayCustomized";
-            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets";
+            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets/Simulator";
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.UseShellExecute = false;
             process.Start();
@@ -46,13 +46,13 @@ namespace Assets.Scripts.UI
         public void OnSave()
         {
             string fileName = optionsMenu.LevelName + ".csv";
-            File.WriteAllText(Application.dataPath + "/StreamingAssets/" + fileName, GridManager.Instance.FormatToCSV());
+            File.WriteAllText(Application.dataPath + "/StreamingAssets/Levels/" + fileName, GridManager.Instance.FormatToCSV());
         }
 
         public void OnLoad()
         {
             string newLevelName = loadLevelInput.text.ToLower().Replace(' ', '_');
-            string filePath = Application.dataPath + "/StreamingAssets/" + newLevelName + ".csv";
+            string filePath = Application.dataPath + "/StreamingAssets/Levels/" + newLevelName + ".csv";
 
             if(File.Exists(filePath))
             {
