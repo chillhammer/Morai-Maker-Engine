@@ -42,7 +42,7 @@ namespace Assets.Scripts.UI
             if(scrollTarget.HasValue)
             {
                 // Scroll the view based on scroll target position
-                ScrollImmediate(Mathf.Lerp(transform.position.x, scrollTarget.Value, 0.1f));
+                ScrollImmediate(Mathf.Lerp(transform.position.x, scrollTarget.Value, 0.06f));
             }
             else if(cameraLock == 0)
             {

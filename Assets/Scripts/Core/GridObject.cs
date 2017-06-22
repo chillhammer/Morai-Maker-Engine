@@ -14,6 +14,23 @@ namespace Assets.Scripts.Core
         [SerializeField]
         private Image image;
 
+        private Color imageColor;
+        private float? alphaTarget;
+        private float alphaRate;
+
+        private void Update()
+        {
+            if(alphaTarget.HasValue)
+            {
+                imageColor = image.color;
+                imageColor.a = Mathf.MoveTowards(image.color.a, alphaTarget.Value, alphaRate * Time.deltaTime);
+                image.color = imageColor;
+
+                if(image.color.a == alphaTarget.Value)
+                    alphaTarget = null;
+            }
+        }
+
         public void SetSprite(SpriteData data)
         {
             Data = data;
@@ -35,6 +52,19 @@ namespace Assets.Scripts.Core
             Y = y;
 
             transform.position = new Vector2(x + (float)Data.Width / 2, y + (float)Data.Height / 2);
+        }
+
+        public void SetAlpha(float alpha)
+        {
+            imageColor = image.color;
+            imageColor.a = alpha;
+            image.color = imageColor;
+        }
+
+        public void SetAlphaOverTime(float alpha, float time)
+        {
+            alphaTarget = alpha;
+            alphaRate = 1 / time;
         }
     }
 }

@@ -73,10 +73,10 @@ namespace Assets.Scripts.Core
             return true;
         }
 
-        public void AddGridObject(SpriteData sprite, int x, int y)
+        public GridObject AddGridObject(SpriteData sprite, int x, int y)
         {
             if(!CanAddGridObject(sprite, x, y))
-                return;
+                return null;
 
             // Instantiate object
             GridObject clone = Instantiate(gridObjectPrefab, sprite.Functional ? gridObjectParentFunctional : gridObjectParentDecorative);
@@ -95,6 +95,8 @@ namespace Assets.Scripts.Core
                         gridDecorative[i, j] = clone;
                 }
             }
+
+            return clone;
         }
 
         public void RemoveGridObject(bool functional, int x, int y)

@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Util;
+﻿using Assets.Scripts.UI;
+using Assets.Scripts.Util;
 using System;
 using System.Collections;
 using System.Diagnostics;
@@ -9,6 +10,11 @@ namespace Assets.Scripts.Core
 {
     public class EndTurn : Singleton<EndTurn>
     {
+        [SerializeField]
+        private CameraScroll windowScroll;
+
+        private static readonly float TOTAL_DURATION = 3f;
+
         public void OnEndTurn()
         {
             // TODO Block input
@@ -35,11 +41,30 @@ namespace Assets.Scripts.Core
 
             // Read new additions from file
             string[] lines = File.ReadAllLines(Application.dataPath + "/StreamingAssets/Model/additions.csv");
+            float rate = 6f / lines.Length;
             foreach(string line in lines)
             {
                 string[] values = line.Split(',');
-                GridManager.Instance.AddGridObject(SpriteManager.Instance.GetSprite(values[0]), int.Parse(values[1]), int.Parse(values[2]));
+                SpriteData sprite = SpriteManager.Instance.GetSprite(values[0]);
+                int spriteX = int.Parse(values[1]);
+                int spriteY = int.Parse(values[2]);
+
+                windowScroll.ScrollOverTime(spriteX + sprite.Width / 2);
+
+                yield return new WaitForSeconds(rate * 0.2f);
+
+                GridObject temp = GridManager.Instance.AddGridObject(sprite, spriteX, spriteY);
+                if(temp != null)
+                {
+                    temp.SetAlpha(0);
+                    temp.SetAlphaOverTime(1, rate * 0.8f);
+                }
+
+                yield return new WaitForSeconds(rate * 0.8f);
             }
+
+            // TODO Unblock input
+            windowScroll.StopScrolling();
         }
     }
 }
