@@ -12,6 +12,8 @@ namespace Assets.Scripts.UI
         private SpriteMenuObject spritePrefab;
         [SerializeField]
         private Camera spriteMenuCamera;
+        [SerializeField]
+        private GridPlacement gridPlacement;
 
         private List<SpriteMenuObject> spriteObjects;
         private SpriteMenuObject selectedSprite;
@@ -25,13 +27,10 @@ namespace Assets.Scripts.UI
             currentTab = SpriteManager.Instance.GetTagList()[0];
             List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList(currentTab);
 
-            // Calculate max sprite width and height
-            float maxWidth = 0, maxHeight = 0;
+            // Calculate max sprite height
+            float maxHeight = 0;
             foreach(SpriteData sprite in sprites)
-            {
-                maxWidth = Mathf.Max(maxWidth, sprite.Width);
                 maxHeight = Mathf.Max(maxHeight, sprite.Height);
-            }
 
             // Calculate some positioning values
             float padding = 0.2f;
@@ -61,7 +60,7 @@ namespace Assets.Scripts.UI
 
         public void SelectSprite(SpriteMenuObject sprite)
         {
-            GridPlacement.Instance.CurrentSprite = sprite.Sprite;
+            gridPlacement.CurrentSprite = sprite.Sprite;
             if(selectedSprite)
                 selectedSprite.SetOutline(false);
             selectedSprite = sprite;
@@ -77,15 +76,12 @@ namespace Assets.Scripts.UI
         private IEnumerator DisplaySpritesCoroutine(List<SpriteData> sprites)
         {
             busy = true;
-            spriteMenuCamera.GetComponent<CameraScroll>().AddLock();
+            spriteMenuCamera.GetComponent<CameraScroll>().AddLock(this);
 
-            // Calculate max sprite width and height
-            float maxWidth = 0, maxHeight = 0;
+            // Calculate max sprite height
+            float maxHeight = 0;
             foreach(SpriteData sprite in sprites)
-            {
-                maxWidth = Mathf.Max(maxWidth, sprite.Width);
                 maxHeight = Mathf.Max(maxHeight, sprite.Height);
-            }
 
             // Calculate some positioning values
             float padding = 0.2f;
@@ -131,7 +127,7 @@ namespace Assets.Scripts.UI
             spriteObjects = newSpriteObjects;
 
             busy = false;
-            spriteMenuCamera.GetComponent<CameraScroll>().RemoveLock();
+            spriteMenuCamera.GetComponent<CameraScroll>().RemoveLock(this);
         }
     }
 }

@@ -52,9 +52,9 @@ namespace Assets.Scripts.UI
             // Apply the options
             // TODO GridView
             if(HoverScroll && !placeholderHoverScroll)
-                Camera.main.GetComponent<CameraScroll>().AddLock();
+                Camera.main.GetComponent<CameraScroll>().AddLock(this);
             else if(!HoverScroll && placeholderHoverScroll)
-                Camera.main.GetComponent<CameraScroll>().RemoveLock();
+                Camera.main.GetComponent<CameraScroll>().RemoveLock(this);
 
             // Save the options
             GridView = placeholderGridView;

@@ -1,32 +1,29 @@
-﻿using Assets.Scripts.Util;
+﻿using Assets.Scripts.UI;
+using Assets.Scripts.Util;
 using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
-    public class GridPlacement : Singleton<GridPlacement>
+    public class GridPlacement : Lockable
     {
         public SpriteData CurrentSprite; // Initialized by the sprite menu
 
-        private bool canPlace = true;
-        public bool CanPlace
-        {
-            get
-            {
-                return canPlace;
-            }
-            set
-            {
-                if(!value)
-                    previewObject.gameObject.SetActive(false);
-                canPlace = value;
-            }
-        }
-
         [SerializeField]
         private GridObject previewObject;
-
+        [SerializeField]
+        private DialogueMenu dialogueMenu;
+        
         private Vector2? previousMousePosition;
         private bool? deletionLayer; // Functional if true, decorative if false
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            dialogueMenu.DialogueOpened += () => AddLock(dialogueMenu);
+            dialogueMenu.DialogueOpened += () => previewObject.gameObject.SetActive(false);
+            dialogueMenu.DialogueClosed += () => RemoveLock(dialogueMenu);
+        }
 
         private void Update()
         {
@@ -35,7 +32,7 @@ namespace Assets.Scripts.Core
             if(previousMousePosition == null)
                 previousMousePosition = mousePosition;
 
-            if(canPlace)
+            if(!IsLocked)
             {
                 // Interpolate between previous and current mouse position
                 int spriteX = 0, spriteY = 0;

@@ -1,6 +1,5 @@
 ﻿using Assets.Scripts.UI;
 using Assets.Scripts.Util;
-using System;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
@@ -8,16 +7,30 @@ using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
-    public class EndTurn : Singleton<EndTurn>
+    public class EndTurn : Lockable
     {
+        [SerializeField]
+        private DialogueMenu dialogueMenu;
+        [SerializeField]
+        private GridPlacement gridPlacement;
         [SerializeField]
         private CameraScroll windowScroll;
 
-        private static readonly float TOTAL_DURATION = 3f;
+        [SerializeField]
+        private float totalDuration = 4;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            dialogueMenu.DialogueOpened += () => AddLock(dialogueMenu);
+            dialogueMenu.DialogueClosed += () => RemoveLock(dialogueMenu);
+        }
 
         public void OnEndTurn()
         {
-            // TODO Block input
+            // Block input
+            gridPlacement.AddLock(this);
 
             // Run model
             Process process = new Process();
@@ -41,30 +54,48 @@ namespace Assets.Scripts.Core
 
             // Read new additions from file
             string[] lines = File.ReadAllLines(Application.dataPath + "/StreamingAssets/Model/additions.csv");
-            float rate = 6f / lines.Length;
+            float rate = totalDuration / lines.Length;
             foreach(string line in lines)
             {
+                // - Parse values
                 string[] values = line.Split(',');
                 SpriteData sprite = SpriteManager.Instance.GetSprite(values[0]);
                 int spriteX = int.Parse(values[1]);
                 int spriteY = int.Parse(values[2]);
 
+                // - Scroll window to addition location
                 windowScroll.ScrollOverTime(spriteX + sprite.Width / 2);
-
-                yield return new WaitForSeconds(rate * 0.2f);
-
-                GridObject temp = GridManager.Instance.AddGridObject(sprite, spriteX, spriteY);
-                if(temp != null)
+                float time = 0;
+                while(time < rate * 0.2f)
                 {
-                    temp.SetAlpha(0);
-                    temp.SetAlphaOverTime(1, rate * 0.8f);
+                    yield return null;
+
+                    if(!IsLocked)
+                        time += Time.deltaTime;
                 }
 
-                yield return new WaitForSeconds(rate * 0.8f);
+                // - Fade addition in
+                GridObject addition = GridManager.Instance.AddGridObject(sprite, spriteX, spriteY);
+                if(addition != null)
+                {
+                    addition.SetAlpha(0);
+                    time = 0;
+                    while(time < rate)
+                    {
+                        yield return null;
+
+                        if(!IsLocked)
+                        {
+                            time += Time.deltaTime;
+                            addition.SetAlpha((time - 0.2f) / (rate * 0.8f));
+                        }
+                    }
+                }
             }
 
-            // TODO Unblock input
+            // Unblock input
             windowScroll.StopScrolling();
+            gridPlacement.RemoveLock(this);
         }
     }
 }

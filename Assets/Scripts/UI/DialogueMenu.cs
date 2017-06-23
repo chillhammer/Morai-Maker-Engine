@@ -29,24 +29,6 @@ namespace Assets.Scripts.UI
 
         private Dialogue? activeDialogue;
 
-        private void Awake()
-        {
-            DialogueOpened += () => GridPlacement.Instance.CanPlace = false;
-            DialogueClosed += () => GridPlacement.Instance.CanPlace = true;
-        }
-
-        private void Update()
-        {
-            if(Input.GetKeyDown(KeyCode.O))
-            {
-                OpenDialogue(Dialogue.RunLevel);
-            }
-            if(Input.GetKeyDown(KeyCode.P))
-            {
-                CloseDialogue();
-            }
-        }
-
         public bool DialogueActive()
         {
             return activeDialogue.HasValue;
