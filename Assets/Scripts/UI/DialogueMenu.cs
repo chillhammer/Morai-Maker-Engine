@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.UI
 {
-    public enum Dialogue { RunLevel, LoadLevel, ClearLevel, OptionsMenu, LevelName, Exit }
+    public enum Dialogue { RunLevel, LoadLevel, ClearLevel, OptionsMenu, LevelName, LevelSize, Exit }
 
     public class DialogueMenu : MonoBehaviour
     {
@@ -24,6 +24,8 @@ namespace Assets.Scripts.UI
         private GameObject optionsPrompt;
         [SerializeField]
         private GameObject levelNamePrompt;
+        [SerializeField]
+        private GameObject levelSizePrompt;
         [SerializeField]
         private GameObject exitPrompt;
 
@@ -62,6 +64,9 @@ namespace Assets.Scripts.UI
                 case Dialogue.LevelName:
                     levelNamePrompt.SetActive(true);
                     break;
+                case Dialogue.LevelSize:
+                    levelSizePrompt.SetActive(true);
+                    break;
                 case Dialogue.Exit:
                     exitPrompt.SetActive(true);
                     break;
@@ -93,6 +98,9 @@ namespace Assets.Scripts.UI
                     break;
                 case Dialogue.LevelName:
                     levelNamePrompt.SetActive(false);
+                    break;
+                case Dialogue.LevelSize:
+                    levelSizePrompt.SetActive(false);
                     break;
                 case Dialogue.Exit:
                     exitPrompt.SetActive(false);

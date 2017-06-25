@@ -13,9 +13,13 @@ namespace Assets.Scripts.UI
         private SpriteMenu spriteMenu;
 
         private string currentTab;
+        private string pendingTab;
 
         private void Start()
         {
+            // Get initial tab
+            currentTab = SpriteManager.Instance.GetTagList()[0];
+
             // Generate tabs
             foreach(string tag in SpriteManager.Instance.GetTagList())
             {
@@ -25,12 +29,21 @@ namespace Assets.Scripts.UI
             }
         }
 
+        private void Update()
+        {
+            if(pendingTab != null && !spriteMenu.IsLocked)
+            {
+                spriteMenu.DisplaySprites(SpriteManager.Instance.GetSpriteList(pendingTab));
+                currentTab = pendingTab;
+                pendingTab = null;
+            }
+        }
+
         private void OnButtonClick(string tag)
         {
             if(currentTab == null || !currentTab.Equals(tag))
             {
-                currentTab = tag;
-                spriteMenu.DisplaySprites(SpriteManager.Instance.GetSpriteList(tag));
+                pendingTab = tag;
             }
         }
     }

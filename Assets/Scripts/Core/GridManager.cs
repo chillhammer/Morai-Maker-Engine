@@ -31,18 +31,32 @@ namespace Assets.Scripts.Core
         private void Start()
         {
             gridObjects = new List<GridObject>();
-            SetGridSize(Mathf.RoundToInt(initialGridSize.x), Mathf.RoundToInt(initialGridSize.y));
+            SetGridSize(Mathf.RoundToInt(initialGridSize.x), Mathf.RoundToInt(initialGridSize.y), false);
         }
-
-        public void SetGridSize(int x, int y)
+        
+        public void SetGridSize(int x, int y, bool keepObjects)
         {
-            ClearGrid();
+            // Store old grid objects
+            List<GridObject> oldGridObjects = new List<GridObject>();
+            if(keepObjects)
+            {
+                foreach(GridObject gridObject in gridObjects)
+                    oldGridObjects.Add(gridObject);
+            }
 
+            // Reinitialize grid
+            ClearGrid();
             GridWidth = x;
             GridHeight = y;
-
             gridFunctional = new GridObject[x, y];
             gridDecorative = new GridObject[x, y];
+
+            // Add old grid objects back
+            if(keepObjects)
+            {
+                foreach(GridObject gridObject in oldGridObjects)
+                    AddGridObject(gridObject.Data, gridObject.X, gridObject.Y);
+            }
 
             GridSizeChanged(x, y);
         }

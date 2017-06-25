@@ -9,7 +9,11 @@ namespace Assets.Scripts.UI
     {
         public bool GridView { get; private set; }
         public bool HoverScroll { get; private set; }
-        public string LevelName { get; private set; }
+
+        [SerializeField]
+        private FileMenu fileMenu;
+        [SerializeField]
+        private GameObject gridLines;
 
         [SerializeField]
         private Image gridViewIcon;
@@ -17,6 +21,10 @@ namespace Assets.Scripts.UI
         private Image hoverScrollIcon;
         [SerializeField]
         private InputField levelNameInput;
+        [SerializeField]
+        private InputField levelWidthInput;
+        [SerializeField]
+        private InputField levelHeightInput;
 
         [SerializeField]
         private Sprite iconCheck;
@@ -31,7 +39,6 @@ namespace Assets.Scripts.UI
             // Initialize options to defaults
             GridView = true;
             HoverScroll = true;
-            LevelName = "level";
             ResetPlaceholderOptions();
         }
 
@@ -49,8 +56,16 @@ namespace Assets.Scripts.UI
 
         public void SavePlaceholderOptions()
         {
-            // Apply the options
-            // TODO GridView
+            // Apply new grid size
+            int levelWidth = int.Parse(levelWidthInput.text);
+            int levelHeight = int.Parse(levelHeightInput.text);
+            if(levelWidth != GridManager.Instance.GridWidth || levelHeight != GridManager.Instance.GridHeight)
+                GridManager.Instance.SetGridSize(levelWidth, levelHeight, true);
+
+            // Apply grid view
+            gridLines.SetActive(placeholderGridView);
+
+            // Apply hover scroll
             if(HoverScroll && !placeholderHoverScroll)
                 Camera.main.GetComponent<CameraScroll>().AddLock(this);
             else if(!HoverScroll && placeholderHoverScroll)
@@ -59,7 +74,7 @@ namespace Assets.Scripts.UI
             // Save the options
             GridView = placeholderGridView;
             HoverScroll = placeholderHoverScroll;
-            LevelName = levelNameInput.text.ToLower().Replace(' ', '_');
+            fileMenu.LevelName = levelNameInput.text;
         }
 
         public void ResetPlaceholderOptions()
@@ -70,13 +85,10 @@ namespace Assets.Scripts.UI
             gridViewIcon.sprite = GridView ? iconCheck : iconCross;
             hoverScrollIcon.sprite = HoverScroll ? iconCheck : iconCross;
 
-            levelNameInput.text = LevelName;
-        }
+            levelNameInput.text = fileMenu.LevelName == null ? "" : fileMenu.LevelName;
 
-        public void SetLevelName(string levelName)
-        {
-            LevelName = levelName.ToLower().Replace(' ', '_');
-            levelNameInput.text = LevelName;
+            levelWidthInput.text = GridManager.Instance.GridWidth.ToString();
+            levelHeightInput.text = GridManager.Instance.GridHeight.ToString();
         }
     }
 }

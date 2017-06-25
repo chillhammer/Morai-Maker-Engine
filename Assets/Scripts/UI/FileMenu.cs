@@ -8,6 +8,13 @@ namespace Assets.Scripts.UI
 {
     public class FileMenu : MonoBehaviour
     {
+        private string levelName;
+        public string LevelName
+        {
+            get { return levelName; }
+            set { levelName = FormatLevelName(value); }
+        }
+
         [SerializeField]
         private DialogueMenu dialogueMenu;
         [SerializeField]
@@ -45,32 +52,34 @@ namespace Assets.Scripts.UI
 
         public void OnSave()
         {
-            string fileName = optionsMenu.LevelName + ".csv";
+            string fileName = LevelName + ".csv";
             File.WriteAllText(Application.dataPath + "/StreamingAssets/Levels/" + fileName, GridManager.Instance.FormatToCSV());
         }
 
         public void OnLoad()
         {
-            string newLevelName = loadLevelInput.text.ToLower().Replace(' ', '_');
-            string filePath = Application.dataPath + "/StreamingAssets/Levels/" + newLevelName + ".csv";
+            // Validate input
+            string newLevelName = FormatLevelName(loadLevelInput.text);
+            if(newLevelName == null)
+                return;
 
+            // Check level exists
+            string filePath = Application.dataPath + "/StreamingAssets/Levels/" + newLevelName + ".csv";
             if(File.Exists(filePath))
             {
-                optionsMenu.SetLevelName(newLevelName);
+                LevelName = newLevelName;
                 
                 // Parse file
                 string[] lines = File.ReadAllLines(filePath);
                 string[] gridSize = lines[0].Split(',');
-                GridManager.Instance.SetGridSize(int.Parse(gridSize[0]), int.Parse(gridSize[1]));
+                GridManager.Instance.SetGridSize(int.Parse(gridSize[0]), int.Parse(gridSize[1]), false);
                 for(int i = 1; i < lines.Length; i++)
                 {
                     string[] line = lines[i].Split(',');
                     GridManager.Instance.AddGridObject(SpriteManager.Instance.GetSprite(line[0]), int.Parse(line[1]), int.Parse(line[2]));
                 }
-            }
-            else
-            {
-                dialogueMenu.OpenDialogue(Dialogue.LoadLevel);
+
+                dialogueMenu.CloseDialogue();
             }
         }
 
@@ -82,6 +91,15 @@ namespace Assets.Scripts.UI
         public void OnExit()
         {
             Application.Quit();
+        }
+
+        public static string FormatLevelName(string levelName)
+        {
+            if(levelName == null)
+                return null;
+
+            string formattedLevelName = levelName.ToLower().Replace(' ', '_').Trim('_');
+            return formattedLevelName == string.Empty ? null : formattedLevelName;
         }
     }
 }

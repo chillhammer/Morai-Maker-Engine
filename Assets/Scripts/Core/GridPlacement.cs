@@ -6,6 +6,7 @@ namespace Assets.Scripts.Core
 {
     public class GridPlacement : Lockable
     {
+        [HideInInspector]
         public SpriteData CurrentSprite; // Initialized by the sprite menu
 
         [SerializeField]

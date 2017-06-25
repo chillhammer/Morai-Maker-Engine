@@ -1,15 +1,17 @@
 ﻿using Assets.Scripts.Core;
+using Assets.Scripts.Util;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Assets.Scripts.UI
 {
-    public class SpriteMenu : MonoBehaviour
+    public class SpriteMenu : Lockable
     {
         [SerializeField]
         private SpriteMenuObject spritePrefab;
+        [SerializeField]
+        private Transform spriteParent;
         [SerializeField]
         private Camera spriteMenuCamera;
         [SerializeField]
@@ -18,14 +20,10 @@ namespace Assets.Scripts.UI
         private List<SpriteMenuObject> spriteObjects;
         private SpriteMenuObject selectedSprite;
 
-        private string currentTab;
-        private bool busy;
-
         private void Start()
         {
             // Get list of sprites for initial tab
-            currentTab = SpriteManager.Instance.GetTagList()[0];
-            List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList(currentTab);
+            List<SpriteData> sprites = SpriteManager.Instance.GetSpriteList(SpriteManager.Instance.GetTagList()[0]);
 
             // Calculate max sprite height
             float maxHeight = 0;
@@ -34,8 +32,8 @@ namespace Assets.Scripts.UI
 
             // Calculate some positioning values
             float padding = 0.2f;
-            // - Sprite height is weighted towards 10 for more consistent scale between tabs
-            float scale = (1 - padding * 2) / ((maxHeight + 10) / 2);
+            // - Sprite height is weighted towards 5 for more consistent scale between tabs
+            float scale = (1 - padding * 2) / ((maxHeight + 5) / 2);
             float spriteX = padding;
             float spriteY = -1.5f;
 
@@ -43,7 +41,7 @@ namespace Assets.Scripts.UI
             spriteObjects = new List<SpriteMenuObject>();
             foreach(SpriteData sprite in sprites)
             {
-                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, transform);
+                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent.transform);
                 temp.Initialize(this, sprite);
                 temp.SetScale(scale);
                 spriteObjects.Add(temp);
@@ -69,13 +67,13 @@ namespace Assets.Scripts.UI
 
         public void DisplaySprites(List<SpriteData> sprites)
         {
-            if(!busy)
+            if(!IsLocked)
                 StartCoroutine(DisplaySpritesCoroutine(sprites));
         }
 
         private IEnumerator DisplaySpritesCoroutine(List<SpriteData> sprites)
         {
-            busy = true;
+            AddLock(this);
             spriteMenuCamera.GetComponent<CameraScroll>().AddLock(this);
 
             // Calculate max sprite height
@@ -85,8 +83,8 @@ namespace Assets.Scripts.UI
 
             // Calculate some positioning values
             float padding = 0.2f;
-            // - Sprite height is weighted towards 10 for more consistent scale between tabs
-            float scale = (1 - padding * 2) / ((maxHeight + 10) / 2);
+            // - Sprite height is weighted towards 5 for more consistent scale between tabs
+            float scale = (1 - padding * 2) / ((maxHeight + 5) / 2);
             float spriteX = spriteMenuCamera.transform.position.x - spriteMenuCamera.orthographicSize * spriteMenuCamera.aspect + padding;
             float spriteY = -0.5f;
 
@@ -94,7 +92,7 @@ namespace Assets.Scripts.UI
             List<SpriteMenuObject> newSpriteObjects = new List<SpriteMenuObject>();
             foreach(SpriteData sprite in sprites)
             {
-                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, transform);
+                SpriteMenuObject temp = Instantiate(spritePrefab, new Vector2(spriteX + sprite.Width * scale / 2, spriteY), Quaternion.identity, spriteParent.transform);
                 temp.Initialize(this, sprite);
                 temp.SetScale(scale);
                 newSpriteObjects.Add(temp);
@@ -126,7 +124,7 @@ namespace Assets.Scripts.UI
                 Destroy(sprite.gameObject);
             spriteObjects = newSpriteObjects;
 
-            busy = false;
+            RemoveLock(this);
             spriteMenuCamera.GetComponent<CameraScroll>().RemoveLock(this);
         }
     }

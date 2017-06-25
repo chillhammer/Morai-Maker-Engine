@@ -29,6 +29,9 @@ namespace Assets.Scripts.Core
 
         public void OnEndTurn()
         {
+            if(IsLocked)
+                return;
+
             // Block input
             gridPlacement.AddLock(this);
 
@@ -66,7 +69,7 @@ namespace Assets.Scripts.Core
                 // - Scroll window to addition location
                 windowScroll.ScrollOverTime(spriteX + sprite.Width / 2);
                 float time = 0;
-                while(time < rate * 0.2f)
+                while(time < rate * 0.25f)
                 {
                     yield return null;
 
@@ -87,9 +90,13 @@ namespace Assets.Scripts.Core
                         if(!IsLocked)
                         {
                             time += Time.deltaTime;
-                            addition.SetAlpha((time - 0.2f) / (rate * 0.8f));
+                            addition.SetAlpha((time - 0.25f) / (rate * 0.75f));
                         }
                     }
+                }
+                else
+                {
+                    yield return new WaitForSeconds(rate - time);
                 }
             }
 
