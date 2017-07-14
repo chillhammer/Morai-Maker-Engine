@@ -97,6 +97,10 @@ namespace Assets.Scripts.UI
                 temp.SetScale(scale);
                 newSpriteObjects.Add(temp);
                 spriteX += sprite.Width * scale + padding;
+
+                // - Reselect current sprite
+                if(sprite.Equals(gridPlacement.CurrentSprite))
+                    SelectSprite(temp);
             }
 
             // Scroll in the new row

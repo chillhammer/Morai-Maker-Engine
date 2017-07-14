@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Core;
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 

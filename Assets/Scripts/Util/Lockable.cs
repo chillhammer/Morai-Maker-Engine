@@ -7,21 +7,34 @@ namespace Assets.Scripts.Util
     {
         public bool IsLocked { get { return locks.Count > 0; } }
 
-        private List<object> locks;
+        private Dictionary<object, int> locks;
 
         protected virtual void Awake()
         {
-            locks = new List<object>();
+            locks = new Dictionary<object, int>();
         }
         
         public void AddLock(object key)
         {
-            locks.Add(key);
+            if(locks.ContainsKey(key))
+            {
+                locks[key] += 1;
+            }
+            else
+            {
+                locks[key] = 1;
+            }
         }
 
         public void RemoveLock(object key)
         {
-            locks.Remove(key);
+            if(locks.ContainsKey(key))
+            {
+                if(locks[key] > 1)
+                    locks[key] -= 1;
+                else
+                    locks.Remove(key);
+            }
         }
     }
 }

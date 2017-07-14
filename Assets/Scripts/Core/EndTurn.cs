@@ -48,11 +48,16 @@ namespace Assets.Scripts.Core
         private IEnumerator EndTurnCoroutine(Process process)
         {
             // Wait until the model is done
-            bool running = true;
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, e) => running = false;
             process.Start();
-            yield return new WaitWhile(() => running);
+            yield return new WaitWhile(() =>
+            {
+                foreach(Process temp in Process.GetProcesses())
+                {
+                    if(process.Id == temp.Id)
+                        return true;
+                }
+                return false;
+            });
             process.Close();
 
             // Read new additions from file

@@ -52,8 +52,15 @@ namespace Assets.Scripts.UI
 
         public void OnSave()
         {
-            string fileName = LevelName + ".csv";
-            File.WriteAllText(Application.dataPath + "/StreamingAssets/Levels/" + fileName, GridManager.Instance.FormatToCSV());
+            if(LevelName == null)
+            {
+                dialogueMenu.OpenDialogue(Dialogue.SaveFailed);
+            }
+            else
+            {
+                string fileName = LevelName + ".csv";
+                File.WriteAllText(Application.dataPath + "/StreamingAssets/Levels/" + fileName, GridManager.Instance.FormatToCSV());
+            }
         }
 
         public void OnLoad()
@@ -62,14 +69,14 @@ namespace Assets.Scripts.UI
             string newLevelName = FormatLevelName(loadLevelInput.text);
             if(newLevelName == null)
                 return;
+            else
+                LevelName = newLevelName;
 
             // Check level exists
-            string filePath = Application.dataPath + "/StreamingAssets/Levels/" + newLevelName + ".csv";
+            string filePath = Application.dataPath + "/StreamingAssets/Levels/" + LevelName + ".csv";
             if(File.Exists(filePath))
             {
-                LevelName = newLevelName;
-                
-                // Parse file
+                // - Parse file
                 string[] lines = File.ReadAllLines(filePath);
                 string[] gridSize = lines[0].Split(',');
                 GridManager.Instance.SetGridSize(int.Parse(gridSize[0]), int.Parse(gridSize[1]), false);
@@ -78,9 +85,14 @@ namespace Assets.Scripts.UI
                     string[] line = lines[i].Split(',');
                     GridManager.Instance.AddGridObject(SpriteManager.Instance.GetSprite(line[0]), int.Parse(line[1]), int.Parse(line[2]));
                 }
-
-                dialogueMenu.CloseDialogue();
             }
+            else
+            {
+                // - Load an empty level instead
+                GridManager.Instance.ClearGrid();
+            }
+
+            dialogueMenu.CloseDialogue();
         }
 
         public void OnClear()
