@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.UI
 {
-    public enum Dialogue { RunLevel, SaveFailed, LoadLevel, ClearLevel, OptionsMenu, LevelName, LevelSize, Exit }
+    public enum Dialogue { RunLevel, SaveFailed, LoadLevel, ClearLevel, OptionsMenu, LevelName, LevelSize, Exit, AIThinking}
 
     public class DialogueMenu : MonoBehaviour
     {

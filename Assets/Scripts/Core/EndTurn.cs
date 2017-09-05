@@ -15,9 +15,13 @@ namespace Assets.Scripts.Core
         private GridPlacement gridPlacement;
         [SerializeField]
         private CameraScroll windowScroll;
+		[SerializeField]
+		private FileMenu fileMenu;
 
         [SerializeField]
         private float totalDuration = 4;
+
+		private Process process;
 
         protected override void Awake()
         {
@@ -35,36 +39,52 @@ namespace Assets.Scripts.Core
             // Block input
             gridPlacement.AddLock(this);
 
+			//Save
+			bool saved = fileMenu.ExternalSave();
+
+			//Open Prompt
+			dialogueMenu.OpenDialogue(Dialogue.AIThinking);
+
             // Run model
-            Process process = new Process();
-            process.StartInfo.FileName = "python";
-            process.StartInfo.Arguments = "model.py ../Levels/level.csv";
-            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets/Model";
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.UseShellExecute = false;
-            StartCoroutine(EndTurnCoroutine(process));
+			if (saved){
+	            process = new Process();
+			
+	            process.StartInfo.FileName = "python";
+				process.StartInfo.Arguments = "runmodel.py ../Levels/"+fileMenu.LevelName+".csv";
+	            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets/Model";
+	            process.StartInfo.CreateNoWindow = true;
+	            process.StartInfo.UseShellExecute = false;
+	            StartCoroutine(EndTurnCoroutine(process));
+			}
         }
 
         private IEnumerator EndTurnCoroutine(Process process)
         {
             // Wait until the model is done
             process.Start();
+
             yield return new WaitWhile(() =>
             {
-                foreach(Process temp in Process.GetProcesses())
+				foreach(Process temp in Process.GetProcessesByName(process.ProcessName))
                 {
-                    if(process.Id == temp.Id)
-                        return true;
+						if(process.Id == temp.Id){
+                        	return true;
+						}
                 }
                 return false;
             });
+
+			//process.WaitForExit ();
             process.Close();
+
+			dialogueMenu.CloseDialogue();
 
             // Read new additions from file
             string[] lines = File.ReadAllLines(Application.dataPath + "/StreamingAssets/Model/additions.csv");
-            float rate = totalDuration / lines.Length;
+			float rate = 4.0f/lines.Length;//Was weird to have this change depending on # of additions
             foreach(string line in lines)
             {
+				UnityEngine.Debug.Log (line);
                 // - Parse values
                 string[] values = line.Split(',');
                 SpriteData sprite = SpriteManager.Instance.GetSprite(values[0]);
@@ -74,7 +94,8 @@ namespace Assets.Scripts.Core
                 // - Scroll window to addition location
                 windowScroll.ScrollOverTime(spriteX + sprite.Width / 2);
                 float time = 0;
-                while(time < rate * 0.25f)
+				UnityEngine.Debug.Log ("Above move camera");
+                while(time < rate * 0.75f)
                 {
                     yield return null;
 
@@ -82,8 +103,10 @@ namespace Assets.Scripts.Core
                         time += Time.deltaTime;
                 }
 
+				UnityEngine.Debug.Log ("Fade addition in");
                 // - Fade addition in
                 GridObject addition = GridManager.Instance.AddGridObject(sprite, spriteX, spriteY);
+
                 if(addition != null)
                 {
                     addition.SetAlpha(0);
@@ -95,14 +118,17 @@ namespace Assets.Scripts.Core
                         if(!IsLocked)
                         {
                             time += Time.deltaTime;
-                            addition.SetAlpha((time - 0.25f) / (rate * 0.75f));
+							addition.SetAlpha((time - rate *0.25f) / (rate * 0.25f));
                         }
                     }
+
+
                 }
-                else
+				else
                 {
                     yield return new WaitForSeconds(rate - time);
                 }
+
             }
 
             // Unblock input

@@ -63,6 +63,11 @@ namespace Assets.Scripts.UI
             }
         }
 
+		public bool ExternalSave(){
+			OnSave ();
+			return LevelName != null;
+		}
+
         public void OnLoad()
         {
             // Validate input

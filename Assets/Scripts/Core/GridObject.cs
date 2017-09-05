@@ -10,6 +10,8 @@ namespace Assets.Scripts.Core
         // Top left corner grid coordinates
         public int X { get; private set; }
         public int Y { get; private set; }
+		public int W { get; private set; }
+		public int H { get; private set; }
 
         [SerializeField]
         private Image image;
@@ -34,6 +36,8 @@ namespace Assets.Scripts.Core
         {
             X = x;
             Y = y;
+			W = Data.Width;
+			H = Data.Height;
 
             transform.position = new Vector2(x + (float)Data.Width / 2, y + (float)Data.Height / 2);
         }
@@ -44,5 +48,9 @@ namespace Assets.Scripts.Core
             imageColor.a = Mathf.Clamp(alpha, 0, 1);
             image.color = imageColor;
         }
+
+		public float GetAlpha(){
+			return image.color.a;
+		}
     }
 }

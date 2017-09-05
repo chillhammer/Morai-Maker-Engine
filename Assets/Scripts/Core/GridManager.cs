@@ -70,6 +70,7 @@ namespace Assets.Scripts.Core
 
         public bool CanAddGridObject(SpriteData sprite, int x, int y)
         {
+			//UnityEngine.Debug.Log ("Can Add GridObject: "+sprite.Name+", "+x+", "+y);
             if(x < 0 || x + sprite.Width > GridWidth)
                 return false;
             else if(y < 0 || y + sprite.Height > GridHeight)
@@ -79,8 +80,9 @@ namespace Assets.Scripts.Core
             {
                 for(int j = y; j < y + sprite.Height; j++)
                 {
-                    if((sprite.Functional ? gridFunctional[i, j] : gridDecorative[i, j]) != null)
-                        return false;
+					if ((sprite.Functional ? gridFunctional [i, j] : gridDecorative [i, j]) != null) {
+						return false;
+					}
                 }
             }
 
@@ -89,12 +91,14 @@ namespace Assets.Scripts.Core
 
         public GridObject AddGridObject(SpriteData sprite, int x, int y)
         {
-            if(!CanAddGridObject(sprite, x, y))
-                return null;
+			if (!CanAddGridObject (sprite, x, y)) {
+				return null;
+			}
 
             // Instantiate object
             GridObject clone = Instantiate(gridObjectPrefab, sprite.Functional ? gridObjectParentFunctional : gridObjectParentDecorative);
-            clone.SetSprite(sprite);
+
+			clone.SetSprite(sprite);
             clone.SetPosition(x, y);
             gridObjects.Add(clone);
 
@@ -141,7 +145,7 @@ namespace Assets.Scripts.Core
 
             builder.AppendLine(GridWidth + "," + GridHeight);
             foreach(GridObject gridObject in gridObjects)
-                builder.AppendLine(gridObject.Data.Name + "," + gridObject.X + "," + gridObject.Y);
+				builder.AppendLine(gridObject.Data.Name + "," + gridObject.X + "," + gridObject.Y+","+gridObject.W+","+gridObject.H);
 
             return builder.ToString();
         }
