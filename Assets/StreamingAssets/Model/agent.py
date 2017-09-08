@@ -7,7 +7,6 @@ class Sprite:
 		self.w = w
 		self.h = h
 
-
 #Base Agent Class
 class Agent:
 	#Set Agent Name

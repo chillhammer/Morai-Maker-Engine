@@ -9,7 +9,7 @@ TCP_PORT = 5016
 BUFFER_SIZE = 1024
 
 print "Before load agent"
-#pick between options
+#TODO; pick between options
 currAgent = GRAgent()
 currAgent.LoadModel()
 print "Agent loaded"
