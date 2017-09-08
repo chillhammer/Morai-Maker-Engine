@@ -70,7 +70,6 @@ namespace Assets.Scripts.Core
 
         public bool CanAddGridObject(SpriteData sprite, int x, int y)
         {
-			//UnityEngine.Debug.Log ("Can Add GridObject: "+sprite.Name+", "+x+", "+y);
             if(x < 0 || x + sprite.Width > GridWidth)
                 return false;
             else if(y < 0 || y + sprite.Height > GridHeight)

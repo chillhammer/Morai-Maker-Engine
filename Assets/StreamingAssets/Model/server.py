@@ -12,18 +12,15 @@ print "Before load agent"
 #pick between options
 currAgent = GRAgent()
 currAgent.LoadModel()
-print "agent loaded"
+print "Agent loaded"
 
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((TCP_IP, TCP_PORT))
-print "socket bound"
 s.listen(1)
-print "listen hit"
 
 conn, addr = s.accept()
-print "s.accept hit"
 #print 'Connection address:', addr
 while 1:
     data = conn.recv(BUFFER_SIZE)

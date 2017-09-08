@@ -74,17 +74,25 @@ namespace Assets.Scripts.Core
                 return false;
             });
 
-			//process.WaitForExit ();
+			yield return new WaitForSeconds(0.5f);
+
             process.Close();
 
+
 			dialogueMenu.CloseDialogue();
+
+
 
             // Read new additions from file
             string[] lines = File.ReadAllLines(Application.dataPath + "/StreamingAssets/Model/additions.csv");
 			float rate = 4.0f/lines.Length;//Was weird to have this change depending on # of additions
+			if (lines.Length < 8) {
+				rate = 0.5f;
+			}
+				
             foreach(string line in lines)
             {
-				UnityEngine.Debug.Log (line);
+				//UnityEngine.Debug.Log (line);
                 // - Parse values
                 string[] values = line.Split(',');
                 SpriteData sprite = SpriteManager.Instance.GetSprite(values[0]);
@@ -94,7 +102,6 @@ namespace Assets.Scripts.Core
                 // - Scroll window to addition location
                 windowScroll.ScrollOverTime(spriteX + sprite.Width / 2);
                 float time = 0;
-				UnityEngine.Debug.Log ("Above move camera");
                 while(time < rate * 0.75f)
                 {
                     yield return null;
@@ -103,7 +110,6 @@ namespace Assets.Scripts.Core
                         time += Time.deltaTime;
                 }
 
-				UnityEngine.Debug.Log ("Fade addition in");
                 // - Fade addition in
                 GridObject addition = GridManager.Instance.AddGridObject(sprite, spriteX, spriteY);
 
