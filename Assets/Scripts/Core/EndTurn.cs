@@ -39,18 +39,16 @@ namespace Assets.Scripts.Core
             // Block input
             gridPlacement.AddLock(this);
 
-			//Save
-			bool saved = fileMenu.ExternalSave();
+            // Save and run model
+			if(fileMenu.ExternalSave())
+            {
+                // Open Prompt
+                dialogueMenu.OpenDialogue(Dialogue.AIThinking);
 
-			//Open Prompt
-			dialogueMenu.OpenDialogue(Dialogue.AIThinking);
-
-            // Run model
-			if (saved){
 	            process = new Process();
 			
 	            process.StartInfo.FileName = "python";
-				process.StartInfo.Arguments = "runmodel.py ../Levels/"+fileMenu.LevelName+".csv";
+				process.StartInfo.Arguments = "runmodel.py ../Levels/" + fileMenu.LevelName+".csv";
 	            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets/Model";
 	            process.StartInfo.CreateNoWindow = true;
 	            process.StartInfo.UseShellExecute = false;
@@ -67,9 +65,8 @@ namespace Assets.Scripts.Core
             {
 				foreach(Process temp in Process.GetProcessesByName(process.ProcessName))
                 {
-						if(process.Id == temp.Id){
-                        	return true;
-						}
+                    if(process.Id == temp.Id)
+                        return true;
                 }
                 return false;
             });
@@ -78,21 +75,18 @@ namespace Assets.Scripts.Core
 
             process.Close();
 
-
 			dialogueMenu.CloseDialogue();
-
-
 
             // Read new additions from file
             string[] lines = File.ReadAllLines(Application.dataPath + "/StreamingAssets/Model/additions.csv");
-			float rate = 4.0f/lines.Length;//Was weird to have this change depending on # of additions
-			if (lines.Length < 8) {
+			float rate = totalDuration / lines.Length; // Was weird to have this change depending on # of additions
+			if (lines.Length < 8)
+            {
 				rate = 0.5f;
 			}
 				
             foreach(string line in lines)
             {
-				//UnityEngine.Debug.Log (line);
                 // - Parse values
                 string[] values = line.Split(',');
                 SpriteData sprite = SpriteManager.Instance.GetSprite(values[0]);
@@ -127,8 +121,6 @@ namespace Assets.Scripts.Core
 							addition.SetAlpha((time - rate *0.25f) / (rate * 0.25f));
                         }
                     }
-
-
                 }
 				else
                 {

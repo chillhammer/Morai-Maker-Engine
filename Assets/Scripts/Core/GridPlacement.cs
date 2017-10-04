@@ -71,8 +71,8 @@ namespace Assets.Scripts.Core
                 // Update preview object
                 if(CurrentSprite.Sprite != previewObject.Data.Sprite)
                     previewObject.SetSprite(CurrentSprite);
-                previewObject.SetPosition(spriteX, spriteY);
                 previewObject.gameObject.SetActive(GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY));
+                previewObject.SetPosition(spriteX, spriteY);
 
                 // Place new grid object (if not hold-to-place)
                 if(Input.GetMouseButtonDown(0) && !Input.GetMouseButton(1) && GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY))

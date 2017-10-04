@@ -49,7 +49,8 @@ namespace Assets.Scripts.Core
             image.color = imageColor;
         }
 
-		public float GetAlpha(){
+		public float GetAlpha()
+        {
 			return image.color.a;
 		}
     }

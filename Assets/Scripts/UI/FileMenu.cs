@@ -28,7 +28,7 @@ namespace Assets.Scripts.UI
         public void OnRun()
 		{
 			// Write level representation to Java file
-			File.WriteAllText (Application.dataPath + "/StreamingAssets/Simulator/src/dk/itu/mario/level/MyLevel.java", GridManager.Instance.FormatToJava ());
+			File.WriteAllText(Application.dataPath + "/StreamingAssets/Simulator/src/dk/itu/mario/level/MyLevel.java", GridManager.Instance.FormatToJava());
 
 			// Recompile the simulator THIS DOES NOT WORK. Folks most run "ant" themselves in the directory
             Process process = new Process();
@@ -68,8 +68,9 @@ namespace Assets.Scripts.UI
             }
         }
 
-		public bool ExternalSave(){
-			OnSave ();
+		public bool ExternalSave()
+        {
+			OnSave();
 			return LevelName != null;
 		}
 
