@@ -2,17 +2,17 @@
 
 import socket, csv, time
 from agent import *
-from gragent import *
+from CNN import *
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5016
 BUFFER_SIZE = 1024
 
-print "Before load agent"
+print("Before load agent")
 #TODO; pick between options
-currAgent = GRAgent()
+currAgent = CNNAgent()
 currAgent.LoadModel()
-print "Agent loaded"
+print("Agent loaded")
 
 
 
@@ -32,7 +32,7 @@ while 1:
         levelSize = []
         levelSprites = []
         for row in reader:
-            print row
+            print(row)
             if readRow:
                 levelSprites.append(Sprite(row[0], int(row[1]), int(row[2]), int(row[3]), int(row[4])))
             else:
