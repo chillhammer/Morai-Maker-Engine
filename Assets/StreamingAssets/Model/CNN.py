@@ -14,7 +14,7 @@ class CNNAgent(Agent):
 	def LoadModel(self):
 		self.window_height = 16
 		self.window_width = 33
-		self.threshold = 0.2
+		self.threshold = 0.25
 		symbol_count = 15
 
 		network = input_data(shape = [None, self.window_height, self.window_width, symbol_count])
@@ -118,40 +118,58 @@ class CNNAgent(Agent):
 
 	# Run the model to generate new suggestions on the grid representation
 	def RunModel(self, level):
+		level_height = len(level)
+		level_width = len(level[0])
 		window_height = self.window_height
 		window_width = self.window_width
-		level_height = len(level) - window_height + 1
-		level_width = len(level[0]) - window_width + 1
 		symbols = ['!', '-', 'X', '*', 'Q', 'S', 'E', '?', '<', '[', ']', '>', 'o', 'B', 'b']
 
-		# Extract obfuscated windows from level
-		windows = np.zeros([level_height * level_width, window_height, window_width, len(symbols)])
-		for level_y in range(level_height):
-			for level_x in range(level_width):
-				for window_y in range(window_height):
-					for window_x in range(window_width):
-						symbol = '!' if window_x == (window_width // 2) else level[level_y + window_y][level_x + window_x]
-						windows[level_y * level_width + level_x][window_y][window_x][symbols.index(symbol)] = 1
+		for level_x in range(level_width):
+			# Extract obfuscated window from level
+			window = np.zeros([window_height, window_width, len(symbols)])
+			for window_y in range(window_height):
+				for window_x in range(window_width):
+					y = level_height - window_height + window_y
+					x = level_x + window_x - window_width // 2
 
-		# Run the model
-		results = self.model.predict(windows)
+					# - Handle bounding issues
+					symbol = None
+					if y < 0:
+						symbol = '-'
+					elif x < 0 or x >= level_width:
+						symbol = 'X'
+					elif x == level_x:
+						symbol = '!'
+					else:
+						symbol = level[y][x]
 
-		# Update level representation with model results
-		for level_y in range(level_height):
-			for level_x in range(level_width):
-				for window_y in range(window_height):
-					one_hot = results[level_y * level_width + level_x][window_y][0]
-					if sum(one_hot) == 0:
-						continue
-					one_hot = np.divide(one_hot, sum(one_hot))
+					window[window_y][window_x][symbols.index(symbol)] = 1
 
-					# - Thresholding based off result distribution
-					one_hot = [i if i >= self.threshold else 0 for i in one_hot]
-					if sum(one_hot) == 0:
-						continue
-					one_hot = np.divide(one_hot, sum(one_hot))
+			# Run the model
+			result = self.model.predict([window])[0]
 
-					# - Probabilitic sampling from model results
-					level[level_y + window_y][level_x + window_width // 2] = np.random.choice(symbols, p=one_hot)
+			# Update level representation with model results
+			for window_y in range(window_height):
+				y = level_height - window_height + window_y
+				x = level_x
+
+				# - Make sure prediction is in bounds
+				if y < 0:
+					continue
+
+				# - Normalize the result distribution
+				one_hot = result[window_y][0]
+				if sum(one_hot) == 0:
+					continue
+				one_hot = np.divide(one_hot, sum(one_hot))
+
+				# - Thresholding based off result distribution
+				one_hot = [i if i >= self.threshold else 0 for i in one_hot]
+				if sum(one_hot) == 0:
+					continue
+				one_hot = np.divide(one_hot, sum(one_hot))
+
+				# - Probabilitic sampling from model results
+				level[y][x] = np.random.choice(symbols, p=one_hot)
 
 		return level
