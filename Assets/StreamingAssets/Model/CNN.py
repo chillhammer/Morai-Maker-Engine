@@ -14,6 +14,7 @@ class CNNAgent(Agent):
 	def LoadModel(self):
 		self.window_height = 16
 		self.window_width = 33
+		self.threshold = 0.2
 		symbol_count = 15
 
 		network = input_data(shape = [None, self.window_height, self.window_width, symbol_count])
@@ -44,8 +45,8 @@ class CNNAgent(Agent):
 					# - Construct entire pipe top
 					level[sprite.y + 0][sprite.x + 0] = '<'
 					level[sprite.y + 0][sprite.x + 1] = '>'
-					level[sprite.y + 1][sprite.x + 0] = '['
-					level[sprite.y + 1][sprite.x + 1] = ']'
+					level[sprite.y - 1][sprite.x + 0] = '['
+					level[sprite.y - 1][sprite.x + 1] = ']'
 				elif symbol == '[':
 					# - Construct both pieces of pipe body
 					level[sprite.y][sprite.x + 0] = '['
@@ -74,50 +75,37 @@ class CNNAgent(Agent):
 		level = [level[level_height - row - 1] for row in range(level_height)]
 
 		# Fill out pipes
-		for level_y in range(0, level_height, -1):
+		for level_y in range(level_height):
 			for level_x in range(level_width):
 				symbol = level[level_y][level_x]
 				if symbol == '[':
-					if level_y > 0 and level_x < level_width - 1:
+					if level_x < level_width - 1:
 						level[level_y][level_x + 1] = ']'
 					else:
 						level[level_y][level_x] = '-'
 				elif symbol == ']':
-					if level_y > 0 and level_x > 0:
+					if level_x > 0:
 						level[level_y][level_x - 1] = '['
-						# - Iterate upwards on the level while pipe elements are present
-						offset_y = 0
-						while level_y + offset_y > 0:
-							if level[level_y + offset_y][level_x - 1] != '[' and level[level_y + offset_y][level_x] != ']':
-								break
-							elif level[level_y + offset_y][level_x - 1] == '<' or level[level_y + offset_y][level_x] == ']':
-								break
-							level[level_y + offset_y][level_x - 1] = '['
-							level[level_y + offset_y][level_x + 0] = ']'
-							offset_y += 1
-						# - Add the top of the pipe
-						level[level_y + offset_y][level_x - 1] = '<'
-						level[level_y + offset_y][level_x + 0] = '>'
 					else:
 						level[level_y][level_x] = '-'
 				elif symbol == '<':
-					if level_y < level_height - 1 and level_x < level_width - 1:
+					if level_y > 0 and level_x < level_width - 1:
 						level[level_y + 0][level_x + 1] = '>'
-						level[level_y + 1][level_x + 0] = '['
-						level[level_y + 1][level_x + 1] = ']'
+						level[level_y - 1][level_x + 0] = '['
+						level[level_y - 1][level_x + 1] = ']'
 					else:
 						level[level_y][level_x] = '-'
 				elif symbol == '>':
-					if level_y < level_height - 1 and level_x > 0:
+					if level_y > 0 and level_x > 0:
 						level[level_y + 0][level_x - 1] = '<'
-						level[level_y + 1][level_x - 1] = '['
-						level[level_y + 1][level_x + 0] = ']'
+						level[level_y - 1][level_x - 1] = '['
+						level[level_y - 1][level_x + 0] = ']'
 					else:
 						level[level_y][level_x] = '-'
 
 		# Convert map to sprite list
 		additions = []
-		for level_y in range(level_height):
+		for level_y in range(level_height - 1, -1, -1):
 			for level_x in range(level_width):
 				symbol = level[level_y][level_x]
 				if symbol in symbol_map:
@@ -152,9 +140,18 @@ class CNNAgent(Agent):
 		for level_y in range(level_height):
 			for level_x in range(level_width):
 				for window_y in range(window_height):
-					# - Probabilitic sampling from model results
 					one_hot = results[level_y * level_width + level_x][window_y][0]
+					if sum(one_hot) == 0:
+						continue
 					one_hot = np.divide(one_hot, sum(one_hot))
+
+					# - Thresholding based off result distribution
+					one_hot = [i if i >= self.threshold else 0 for i in one_hot]
+					if sum(one_hot) == 0:
+						continue
+					one_hot = np.divide(one_hot, sum(one_hot))
+
+					# - Probabilitic sampling from model results
 					level[level_y + window_y][level_x + window_width // 2] = np.random.choice(symbols, p=one_hot)
 
 		return level

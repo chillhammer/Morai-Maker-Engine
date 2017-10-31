@@ -8,7 +8,7 @@ TCP_IP = '127.0.0.1'
 TCP_PORT = 5016
 BUFFER_SIZE = 1024
 
-print("Agent loading")
+print("\nAgent loading")
 #TODO; pick between options
 currAgent = CNNAgent()
 currAgent.LoadModel()
@@ -49,6 +49,7 @@ while 1:
                     break
             if addIt:
                 finalSpriteList.append(s)
+        finalSpriteList.sort(key=lambda s: s.x * 16 - s.y)
 
         # Write additions to file
         printedList = []
