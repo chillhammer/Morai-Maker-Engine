@@ -33,50 +33,40 @@ namespace Assets.Scripts.Core
 
         public void OnEndTurn()
         {
-            if(IsLocked)
+            if(IsLocked())
                 return;
-
-            // Block input
-            gridPlacement.AddLock(this);
 
             // Save and run model
 			if(fileMenu.ExternalSave())
             {
-                // Open Prompt
+                // Block input
+                gridPlacement.AddLock(this);
+                AddLock(this);
+
+                // Open prompt
                 dialogueMenu.OpenDialogue(Dialogue.AIThinking);
 
+                // Run process
 	            process = new Process();
 			
 	            process.StartInfo.FileName = "python";
-				process.StartInfo.Arguments = "runmodel.py ../Levels/" + fileMenu.LevelName+".csv";
+				process.StartInfo.Arguments = "runmodel.py ../Levels/" + fileMenu.LevelName + ".csv";
 	            process.StartInfo.WorkingDirectory = Application.dataPath + "/StreamingAssets/Model";
 	            process.StartInfo.CreateNoWindow = true;
 	            process.StartInfo.UseShellExecute = false;
+
+                process.Start();
 	            StartCoroutine(EndTurnCoroutine(process));
 			}
         }
 
         private IEnumerator EndTurnCoroutine(Process process)
         {
-            // Wait until the model is done
-            process.Start();
+            yield return new WaitUntil(() => process.HasExited);
 
-            yield return new WaitWhile(() =>
-            {
-				foreach(Process temp in Process.GetProcessesByName(process.ProcessName))
-                {
-                    if(process.Id == temp.Id)
-                        return true;
-                }
-                return false;
-            });
-
-			yield return new WaitForSeconds(0.5f);
-
-            process.Close();
-
-			dialogueMenu.CloseDialogue();
-
+            // Close prompt
+            dialogueMenu.CloseDialogue();
+            
             // Read new additions from file
             string[] lines = File.ReadAllLines(Application.dataPath + "/StreamingAssets/Model/additions.csv");
 			float rate = totalDuration / lines.Length; // Was weird to have this change depending on # of additions
@@ -93,45 +83,40 @@ namespace Assets.Scripts.Core
                 int spriteX = int.Parse(values[1]);
                 int spriteY = int.Parse(values[2]);
 
-                // - Scroll window to addition location
-                windowScroll.ScrollOverTime(spriteX + sprite.Width / 2);
-                float time = 0;
-                while(time < rate * 0.75f)
+                if(GridManager.Instance.CanAddGridObject(sprite, spriteX, spriteY))
                 {
-                    yield return null;
+                    // - Scroll window to addition location
+                    windowScroll.ScrollOverTime(spriteX + sprite.Width / 2);
+                    float time = 0;
+                    while(time < rate * 0.75f)
+                    {
+                        yield return null;
 
-                    if(!IsLocked)
-                        time += Time.deltaTime;
-                }
+                        if(!IsLocked(dialogueMenu))
+                            time += Time.deltaTime;
+                    }
 
-                // - Fade addition in
-                GridObject addition = GridManager.Instance.AddGridObject(sprite, spriteX, spriteY);
-
-                if(addition != null)
-                {
+                    // - Fade addition in
+                    GridObject addition = GridManager.Instance.AddGridObject(sprite, spriteX, spriteY);
                     addition.SetAlpha(0);
-                    time = 0;
                     while(time < rate)
                     {
                         yield return null;
 
-                        if(!IsLocked)
+                        if(!IsLocked(dialogueMenu))
                         {
                             time += Time.deltaTime;
-							addition.SetAlpha((time - rate *0.25f) / (rate * 0.25f));
+                            addition.SetAlpha((time - rate * 0.75f) / (rate * 0.25f));
                         }
                     }
+                    addition.SetAlpha(1);
                 }
-				else
-                {
-                    yield return new WaitForSeconds(rate - time);
-                }
-
             }
 
             // Unblock input
             windowScroll.StopScrolling();
             gridPlacement.RemoveLock(this);
+            RemoveLock(this);
         }
     }
 }

@@ -8,38 +8,42 @@ from agent import *
 class CNNAgent(Agent):
 
 	def __init__(self):
-		object.__init__("CNNAgent")
+		object.__init__('CNNAgent')
 
 
 	def LoadModel(self):
-		network = input_data(shape = [None, 16, 33, 15])
+		self.window_height = 16
+		self.window_width = 33
+		symbol_count = 15
+
+		network = input_data(shape = [None, self.window_height, self.window_width, symbol_count])
 		network = conv_2d(network, 16, 2, activation='leaky_relu')
 		network = max_pool_2d(network, 2)
 		network = local_response_normalization(network)
 		network = fully_connected(network, 240, activation='relu')
-		network = tf.reshape(network, [-1, 16, 1, 15])
-		network = regression(network, optimizer = 'adagrad', learning_rate = 0.00025, loss = 'categorical_crossentropy', name = 'target', batch_size=32)
+		network = tf.reshape(network, [-1, self.window_height, 1, symbol_count])
+		network = regression(network, optimizer='adagrad', learning_rate=0.00025, loss='categorical_crossentropy', name='target', batch_size=32)
 
 		self.model = tflearn.DNN(network)
-		self.model.load("./CNNmodel/model.tfl")
+		self.model.load('./CNNmodel/model.tfl')
 
 
 	# Convert sprite list to grid representation
-	def ConvertToAgentRepresentation(self, objectsList, levelWidth, levelHeight):
-		level = [['-' for _ in range(levelWidth)] for _ in range(levelHeight)]
+	def ConvertToAgentRepresentation(self, objectsList, levelWidth, level_height):
+		level = [['-' for _ in range(levelWidth)] for _ in range(level_height)]
 		symbol_map = {'Ground':'X', 'Block':'S', 'Stair':'X', 'Pipe':'<', 'PipeBody':'[', 'Treetop':'X', 'Bridge':'X',
 		              'Coin':'o', 'Question':'?', 'Cannon 1':'B', 'Cannon 2':'B', 'CannonBody':'b', 'Bar':'X', 'Bar 2':'X', 'Bar 3':'X',
 					  'Goomba':'E', 'Koopa':'E', 'Koopa 2':'E', 'Hard Shell':'E', 'Hammer Bro':'E', 'Plant':'E', 'Winged Koopa':'E', 'Winged Koopa 2':'E'}
 
 		# Add sprites to level representation
 		for sprite in objectsList:
-			if symbol_map.has_key(sprite.name):
+			if sprite.name in symbol_map:
 				symbol = symbol_map[sprite.name]
 
 				if symbol == '<':
 					# - Construct entire pipe top
-					level[sprite.y][sprite.x + 0] = '<'
-					level[sprite.y][sprite.x + 1] = '>'
+					level[sprite.y + 0][sprite.x + 0] = '<'
+					level[sprite.y + 0][sprite.x + 1] = '>'
 					level[sprite.y + 1][sprite.x + 0] = '['
 					level[sprite.y + 1][sprite.x + 1] = ']'
 				elif symbol == '[':
@@ -55,7 +59,8 @@ class CNNAgent(Agent):
 						for column in range(sprite.x, sprite.x + sprite.w):
 							level[row][column] = symbol
 
-		return level
+		# Flip level representation vertically
+		return [level[level_height - row - 1] for row in range(level_height)]
 
 
 	# Clean up grid representation and convert to sprite list
@@ -64,6 +69,9 @@ class CNNAgent(Agent):
 		level_width = len(level[0])
 		symbol_map = {'X':'Ground', 'Q':'Question', 'S':'Block', 'E':'Goomba', '?':'Question', '<':'Pipe', '[':'PipeBody', 'o':'Coin', 'B':'Cannon 1', 'b':'CannonBody'}
 		size_map = {'Default':(1, 1), 'Pipe':(2, 2), 'PipeBody':(2, 1)}
+
+		# Flip level representation vertically
+		level = [level[level_height - row - 1] for row in range(level_height)]
 
 		# Fill out pipes
 		for level_y in range(0, level_height, -1):
@@ -112,9 +120,9 @@ class CNNAgent(Agent):
 		for level_y in range(level_height):
 			for level_x in range(level_width):
 				symbol = level[level_y][level_x]
-				if symbol_map.has_key(symbol):
+				if symbol in symbol_map:
 					name = symbol_map[symbol]
-					size_x, size_y = size_map[name] if size_map.has_key(name) else size_map['Default']
+					size_x, size_y = size_map[name] if name in size_map else size_map['Default']
 					additions.append(Sprite(name, level_x, level_y, size_x, size_y))
 
 		return additions
@@ -122,8 +130,8 @@ class CNNAgent(Agent):
 
 	# Run the model to generate new suggestions on the grid representation
 	def RunModel(self, level):
-		window_height = 16
-		window_width = 33
+		window_height = self.window_height
+		window_width = self.window_width
 		level_height = len(level) - window_height + 1
 		level_width = len(level[0]) - window_width + 1
 		symbols = ['!', '-', 'X', '*', 'Q', 'S', 'E', '?', '<', '[', ']', '>', 'o', 'B', 'b']
@@ -134,7 +142,7 @@ class CNNAgent(Agent):
 			for level_x in range(level_width):
 				for window_y in range(window_height):
 					for window_x in range(window_width):
-						symbol = '!' if window_x == (window_width / 2) else level[level_y + window_y][level_x + window_x]
+						symbol = '!' if window_x == (window_width // 2) else level[level_y + window_y][level_x + window_x]
 						windows[level_y * level_width + level_x][window_y][window_x][symbols.index(symbol)] = 1
 
 		# Run the model
@@ -147,6 +155,6 @@ class CNNAgent(Agent):
 					# - Probabilitic sampling from model results
 					one_hot = results[level_y * level_width + level_x][window_y][0]
 					one_hot = np.divide(one_hot, sum(one_hot))
-					level[level_y + window_y][level_x + window_width / 2] = np.random.choice(symbols, p=one_hot)
+					level[level_y + window_y][level_x + window_width // 2] = np.random.choice(symbols, p=one_hot)
 
 		return level

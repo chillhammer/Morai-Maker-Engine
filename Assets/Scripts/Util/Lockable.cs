@@ -5,13 +5,21 @@ namespace Assets.Scripts.Util
 {
     public class Lockable : MonoBehaviour
     {
-        public bool IsLocked { get { return locks.Count > 0; } }
-
         private Dictionary<object, int> locks;
 
         protected virtual void Awake()
         {
             locks = new Dictionary<object, int>();
+        }
+
+        public bool IsLocked()
+        {
+            return locks.Count > 0;
+        }
+
+        public bool IsLocked(object key)
+        {
+            return locks.ContainsKey(key);
         }
         
         public void AddLock(object key)

@@ -30,7 +30,7 @@ namespace Assets.Scripts.UI
 
         private void Update()
         {
-            if(pendingTab != null && !spriteMenu.IsLocked)
+            if(pendingTab != null && !spriteMenu.IsLocked())
             {
                 spriteMenu.DisplaySprites(SpriteManager.Instance.GetSpriteList(pendingTab));
                 currentTab = pendingTab;

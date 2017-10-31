@@ -40,7 +40,7 @@ namespace Assets.Scripts.UI
 
         private void FixedUpdate()
         {
-            if(IsLocked)
+            if(IsLocked())
                 return;
 
             if(scrollTarget.HasValue)
