@@ -14,7 +14,7 @@ class CNNAgent(Agent):
 	def LoadModel(self):
 		self.window_height = 16
 		self.window_width = 8
-		self.threshold = 0.1
+		self.threshold = 0.3
 		self.ground_height = 2
 		symbol_count = 14
 
@@ -140,10 +140,8 @@ class CNNAgent(Agent):
 
 					# - Handle bounding issues
 					symbol = None
-					if y < 0:
-						symbol = '-'
-					elif x < 0:
-						symbol = 'X'
+					if y < 0 or x < 0:
+						symbol = 'X' if level_height - y <= self.ground_height else '-'
 					else:
 						symbol = level[y][x]
 
