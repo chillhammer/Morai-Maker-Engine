@@ -13,17 +13,18 @@ class CNNAgent(Agent):
 
 	def LoadModel(self):
 		self.window_height = 16
-		self.window_width = 33
-		self.threshold = 0.25
-		symbol_count = 15
+		self.window_width = 8
+		self.threshold = 0.1
+		self.ground_height = 2
+		symbol_count = 14
 
 		network = input_data(shape = [None, self.window_height, self.window_width, symbol_count])
 		network = conv_2d(network, 16, 2, activation='leaky_relu')
 		network = max_pool_2d(network, 2)
 		network = local_response_normalization(network)
-		network = fully_connected(network, 240, activation='relu')
-		network = tf.reshape(network, [-1, self.window_height, 1, symbol_count])
-		network = regression(network, optimizer='adagrad', learning_rate=0.00025, loss='categorical_crossentropy', name='target', batch_size=32)
+		network = fully_connected(network, self.window_height * symbol_count, activation='relu')
+		network = tf.reshape(network, [-1, self.window_height, symbol_count])
+		network = regression(network, optimizer='adagrad', learning_rate=0.005, loss='mean_square', name='target', batch_size=64)
 
 		self.model = tflearn.DNN(network)
 		self.model.load('./CNNmodel/model.tfl')
@@ -110,6 +111,10 @@ class CNNAgent(Agent):
 				symbol = level[level_y][level_x]
 				if symbol in symbol_map:
 					name = symbol_map[symbol]
+
+					# - Replace ground with stairs above altitude 2
+					name = 'Stair' if name == 'Ground' and level_y >= self.ground_height else name
+
 					size_x, size_y = size_map[name] if name in size_map else size_map['Default']
 					additions.append(Sprite(name, level_x, level_y, size_x, size_y))
 
@@ -122,24 +127,23 @@ class CNNAgent(Agent):
 		level_width = len(level[0])
 		window_height = self.window_height
 		window_width = self.window_width
-		symbols = ['!', '-', 'X', '*', 'Q', 'S', 'E', '?', '<', '[', ']', '>', 'o', 'B', 'b']
+		symbols = ['-', 'X', '*', 'Q', 'S', 'E', '?', '<', '[', ']', '>', 'o', 'B', 'b']
 
 		for level_x in range(level_width):
+
 			# Extract obfuscated window from level
 			window = np.zeros([window_height, window_width, len(symbols)])
 			for window_y in range(window_height):
 				for window_x in range(window_width):
 					y = level_height - window_height + window_y
-					x = level_x + window_x - window_width // 2
+					x = level_x - window_width + window_x
 
 					# - Handle bounding issues
 					symbol = None
 					if y < 0:
 						symbol = '-'
-					elif x < 0 or x >= level_width:
+					elif x < 0:
 						symbol = 'X'
-					elif x == level_x:
-						symbol = '!'
 					else:
 						symbol = level[y][x]
 
@@ -158,7 +162,7 @@ class CNNAgent(Agent):
 					continue
 
 				# - Normalize the result distribution
-				one_hot = result[window_y][0]
+				one_hot = result[window_y]
 				if sum(one_hot) == 0:
 					continue
 				one_hot = np.divide(one_hot, sum(one_hot))
