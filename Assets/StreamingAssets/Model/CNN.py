@@ -14,9 +14,9 @@ class CNNAgent(Agent):
 	def LoadModel(self):
 		self.window_height = 16
 		self.window_width = 8
-		self.threshold = 0.3
-		self.ground_height = 2
-		symbol_count = 14
+		self.threshold = 0.03
+		self.ground_height = 3
+		symbol_count = 13
 
 		network = input_data(shape = [None, self.window_height, self.window_width, symbol_count])
 		network = conv_2d(network, 16, 2, activation='leaky_relu')
@@ -127,7 +127,11 @@ class CNNAgent(Agent):
 		level_width = len(level[0])
 		window_height = self.window_height
 		window_width = self.window_width
-		symbols = ['-', 'X', '*', 'Q', 'S', 'E', '?', '<', '[', ']', '>', 'o', 'B', 'b']
+		symbols = ['-', 'X', 'Q', 'S', 'E', '?', '<', '[', ']', '>', 'o', 'B', 'b']
+
+		# Pad ground by one block
+		level.pop(0)
+		level.append(['X' if level[-1][i] == 'X' else '-' for i in range(level_width)])
 
 		for level_x in range(level_width):
 
@@ -173,5 +177,9 @@ class CNNAgent(Agent):
 
 				# - Probabilitic sampling from model results
 				level[y][x] = np.random.choice(symbols, p=one_hot)
+
+		# Remove ground padding
+		level.pop()
+		level.insert(0, ['-' for i in range(level_width)])
 
 		return level
