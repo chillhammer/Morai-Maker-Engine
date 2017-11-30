@@ -2,7 +2,7 @@
 
 import socket, csv, time
 from agent import *
-from CNN import *
+from LSTM import *
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5016
@@ -10,7 +10,7 @@ BUFFER_SIZE = 1024
 
 print("\nAgent loading")
 #TODO; pick between options
-currAgent = CNNAgent()
+currAgent = LSTMAgent()
 currAgent.LoadModel()
 print("Agent loaded\n")
 

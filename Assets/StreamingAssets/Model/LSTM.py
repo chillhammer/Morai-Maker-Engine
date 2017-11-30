@@ -1,32 +1,32 @@
 import tflearn, csv, random, glob, os
 import tensorflow as tf
-from tflearn import conv_2d, max_pool_2d, local_response_normalization, batch_normalization, fully_connected, regression, input_data, dropout, custom_layer, flatten, reshape, embedding
+from tflearn import batch_normalization, fully_connected, regression, input_data, dropout, custom_layer, flatten, reshape, embedding
+from tflearn.layers.recurrent import bidirectional_rnn, BasicLSTMCell
 import numpy as np
 from agent import *
 
-class CNNAgent(Agent):
+class LSTMAgent(Agent):
 
 	def __init__(self):
-		object.__init__('CNNAgent')
+		object.__init__('LSTMAgent')
 
 
 	def LoadModel(self):
 		self.window_height = 16
-		self.window_width = 8
+		self.window_width = 4
 		self.threshold = 0.03
 		self.ground_height = 2
 		symbol_count = 13
 
-		network = input_data(shape = [None, self.window_height, self.window_width, symbol_count])
-		network = conv_2d(network, 16, 2, activation='leaky_relu')
-		network = max_pool_2d(network, 2)
-		network = local_response_normalization(network)
-		network = fully_connected(network, self.window_height * symbol_count, activation='relu')
+		network = input_data(shape = [None, self.window_height * self.window_width, symbol_count])
+		network = bidirectional_rnn(network, BasicLSTMCell(2), BasicLSTMCell(2))
+		network = dropout(network, 0.8)
+		network = fully_connected(network, self.window_height * symbol_count, activation='prelu')
 		network = tf.reshape(network, [-1, self.window_height, symbol_count])
 		network = regression(network, optimizer='adagrad', learning_rate=0.005, loss='mean_square', name='target', batch_size=64)
 
 		self.model = tflearn.DNN(network)
-		self.model.load('./CNNmodel/model.tfl')
+		self.model.load('./LSTMmodel/model.tfl')
 
 
 	# Convert sprite list to grid representation
@@ -151,6 +151,7 @@ class CNNAgent(Agent):
 					window[window_y][window_x][symbols.index(symbol)] = 1
 
 			# Run the model
+			window = np.reshape(window, [window_height * window_width, len(symbols)])
 			result = self.model.predict([window])[0]
 
 			# Update level representation with model results
