@@ -19,9 +19,6 @@ namespace Assets.Scripts.Core
 
         public void SetSprite(SpriteData data)
         {
-			W = data.Width;
-			H = data.Height;
-
             Data = data;
             image.sprite = data.Sprite;
             if(data.MaintainAspect)
@@ -39,6 +36,8 @@ namespace Assets.Scripts.Core
         {
             X = x;
             Y = y;
+			W = Data.Width;
+			H = Data.Height;
 
             transform.position = new Vector2(x + (float)Data.Width / 2, y + (float)Data.Height / 2);
         }
@@ -50,8 +49,7 @@ namespace Assets.Scripts.Core
             image.color = imageColor;
         }
 
-		public float GetAlpha()
-        {
+		public float GetAlpha(){
 			return image.color.a;
 		}
     }

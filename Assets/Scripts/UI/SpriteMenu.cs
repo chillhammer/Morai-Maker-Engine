@@ -67,7 +67,7 @@ namespace Assets.Scripts.UI
 
         public void DisplaySprites(List<SpriteData> sprites)
         {
-            if(!IsLocked())
+            if(!IsLocked)
                 StartCoroutine(DisplaySpritesCoroutine(sprites));
         }
 

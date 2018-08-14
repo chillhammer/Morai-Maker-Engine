@@ -166,8 +166,9 @@ class GRAgent:
 
 	#Load the LNodes
 	def LoadModel(self):
+		print ("Load Model")
 		for filename in glob.glob("./GRmodel/*.p"):
-			print "Loading: "+str(filename)
+			print ("Loading: "+str(filename))
 			lNodeFile = open(filename, "rb")
 			lNode = pickle.load(lNodeFile)
 			lNodeFile.close()
@@ -262,9 +263,9 @@ class GRAgent:
 	#Find the best LNode, get the best NNode, and find the max prediction
 	def RunModel(self, level):
 		additions = []
-		print "Run Model Hit"
+		print ("Run Model Hit")
 		for chunkKey in level.keys():
-			print "Chunk Key: "+str(chunkKey)
+			print ("Chunk Key: "+str(chunkKey))
 			#FIND L Node
 			maxLNode = None
 			maxPossibilities = []

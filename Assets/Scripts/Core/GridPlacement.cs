@@ -22,7 +22,7 @@ namespace Assets.Scripts.Core
             base.Awake();
 
             dialogueMenu.DialogueOpened += () => AddLock(dialogueMenu);
-            dialogueMenu.DialogueOpened += () => previewObject.SetAlpha(0);
+            dialogueMenu.DialogueOpened += () => previewObject.gameObject.SetActive(false);
             dialogueMenu.DialogueClosed += () => RemoveLock(dialogueMenu);
         }
 
@@ -33,7 +33,7 @@ namespace Assets.Scripts.Core
             if(previousMousePosition == null)
                 previousMousePosition = mousePosition;
 
-            if(!IsLocked())
+            if(!IsLocked)
             {
                 // Interpolate between previous and current mouse position
                 int spriteX = 0, spriteY = 0;
@@ -72,7 +72,7 @@ namespace Assets.Scripts.Core
                 if(CurrentSprite.Sprite != previewObject.Data.Sprite)
                     previewObject.SetSprite(CurrentSprite);
                 previewObject.SetPosition(spriteX, spriteY);
-                previewObject.SetAlpha(GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY) ? 0.5f : 0);
+                previewObject.gameObject.SetActive(GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY));
 
                 // Place new grid object (if not hold-to-place)
                 if(Input.GetMouseButtonDown(0) && !Input.GetMouseButton(1) && GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY))
@@ -89,7 +89,7 @@ namespace Assets.Scripts.Core
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            previewObject.SetAlpha(0);
+            previewObject.gameObject.SetActive(false);
             previousMousePosition = null;
         }
     }
