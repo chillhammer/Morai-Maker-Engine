@@ -4,15 +4,13 @@ using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
-    public enum SimulatorObject { None, Ground, Block, Coin, Goomba, Koopa }
 
     [System.Serializable]
     public struct SpriteData
     {
         public string Name;
         public Sprite Sprite;
-        public SimulatorObject Mapping;
-        
+
         public int Width;
         public int Height;
 
@@ -53,6 +51,9 @@ namespace Assets.Scripts.Core
 
         public SpriteData GetSprite(string name)
         {
+			if (!spriteDictionary.ContainsKey (name)) {
+				return spriteDictionary ["Goomba"];
+			}
             return spriteDictionary[name];
         }
 

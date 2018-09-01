@@ -64,7 +64,7 @@ namespace Assets.Scripts.Core
                     else if(Input.GetMouseButton(0) && CurrentSprite.HoldToPlace && GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY))
                     {
                         // Place new grid object (if hold-to-place)
-                        GridManager.Instance.AddGridObject(CurrentSprite, spriteX, spriteY);
+                        GridManager.Instance.AddGridObject(CurrentSprite, spriteX, spriteY, true);
                     }
                 }
 
@@ -76,7 +76,7 @@ namespace Assets.Scripts.Core
 
                 // Place new grid object (if not hold-to-place)
                 if(Input.GetMouseButtonDown(0) && !Input.GetMouseButton(1) && GridManager.Instance.CanAddGridObject(CurrentSprite, spriteX, spriteY))
-                    GridManager.Instance.AddGridObject(CurrentSprite, spriteX, spriteY);
+                    GridManager.Instance.AddGridObject(CurrentSprite, spriteX, spriteY, true);
 
                 // Remove deletion layer
                 if(Input.GetMouseButtonUp(1))

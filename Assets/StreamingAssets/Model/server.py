@@ -65,16 +65,15 @@ while 1:
         print (len(finalSpriteList))
         # Write additions to file
         printedList = []
-        with open('./additions.csv', 'wb') as additions_file:
-            writer = csv.writer(additions_file)
+        with  as additions_file:    
             for f in finalSpriteList:
                 row = [f.name,f.x,f.y]
                 if not row in printedList:
                     writer.writerow(row)
                     printedList.append(row)
-        time.sleep(2) 
+        time.sleep(1) 
         conn.close()
-        time.sleep(2) 
+        time.sleep(1) 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((TCP_IP, TCP_PORT))
         s.listen(1)
