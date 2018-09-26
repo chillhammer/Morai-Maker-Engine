@@ -8,15 +8,16 @@ public class LogHandler : MonoBehaviour {
 	public static LogHandler Instance;
 
 	void Awake(){
-		if (!File.Exists (Application.dataPath+"/Study_Data/" + Constants.idOne + "/" + Constants.idOne + "-" + Constants.round + ".txt")) {
-			if (!Directory.Exists (Application.dataPath+"/Study_Data/" + Constants.idOne)) {
-				Directory.CreateDirectory (Application.dataPath+"/Study_Data/" + Constants.idOne);
+		if (!File.Exists(Application.dataPath + "/Study_Data/" + Constants.idOne + "/" + Constants.idOne + "-" + Constants.round + ".txt"))
+		{
+			if (!Directory.Exists(Application.dataPath + "/Study_Data/" + Constants.idOne))
+			{
+				Directory.CreateDirectory(Application.dataPath + "/Study_Data/" + Constants.idOne);
 			}
-
-			sw = new StreamWriter (Application.dataPath+"/Study_Data/" + Constants.idOne + "/" + Constants.idOne + "-" + Constants.round + ".txt");
-			Instance = this;
-			LogHandler.Instance.WriteLine ("Study Start:  time = " + Time.time);
 		}
+		sw = new StreamWriter (Application.dataPath+"/Study_Data/" + Constants.idOne + "/" + Constants.idOne + "-" + Constants.round + ".txt");
+		Instance = this;
+		LogHandler.Instance.WriteLine ("Study Start:  time = " + Time.time);
 	}
 
 	public void WriteLine(string line){

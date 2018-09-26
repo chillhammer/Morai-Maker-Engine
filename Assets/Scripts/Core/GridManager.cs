@@ -58,12 +58,15 @@ namespace Assets.Scripts.Core
                     AddGridObject(gridObject.Data, gridObject.X, gridObject.Y, false);
             }
 
-            GridSizeChanged(x, y);
+			if (GridSizeChanged != null)
+				GridSizeChanged(x, y);
         }
 
         public void ClearGrid()
         {
 			LogHandler.Instance.WriteLine ("Grid Cleared:  time = "+Time.time);
+			if (gridObjects == null)
+				return;
             foreach(GridObject gridObject in gridObjects)
                 Destroy(gridObject.gameObject);
             gridObjects.Clear();

@@ -125,7 +125,8 @@ confidenceDelta = 0.001
 while 1:
     try:
         data = conn.recv(BUFFER_SIZE)
-
+        data = data.decode("utf-8")
+        
         if len(data)>0:
             #print("Data: "+str(data)+", "+str(len(data)))
             dataSplits = data.split("|")
