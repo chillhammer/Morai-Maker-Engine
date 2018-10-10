@@ -29,6 +29,16 @@ namespace Assets.PlayabilityCheck.PathFinding
 		private Algorithms.PriorityQueueB<Location> openLocations;
 
 
+		public PathFinding()
+		{
+
+			traversedCoordinates = new Stack<int>();
+			nodes = new List<PFNode>[GridManager.Instance.GridWidth * GridManager.Instance.GridHeight];
+			for (var i = 0; i < nodes.Length; ++i)
+				nodes[i] = new List<PFNode>(1);
+			openLocations = new Algorithms.PriorityQueueB<Location>(new ComparePFNodeMatrix(nodes));
+		}
+
 
 		public List<Vector2> FindPath(Vector2 start, Vector2 end) {
 			#region Setup
@@ -66,13 +76,15 @@ namespace Assets.PlayabilityCheck.PathFinding
 				firstNode.JumpLength = (short)(characterJumpHeight * 2);
 
 			//Adding Start Location to Stack
+			nodes[myLocation.xy].Add(firstNode);
 			traversedCoordinates.Push(myLocation.xy);
 			openLocations.Push(myLocation);
+			
 			#endregion
 
 			bool found = false;
 			long iterationCount = 0;
-			sbyte[,] direction = new sbyte[8, 2] { {0,-1}, {1,0 }, {0,1}, {-1,0}, {1,-1}, {1,1}, {-1,1}, {-1,-1} };
+			int[,] direction = new int[8, 2] { {0,-1}, {1,0 }, {0,1}, {-1,0}, {1,-1}, {1,1}, {-1,1}, {-1,-1} };
 			//Loop Through Priority Queue 
 			while (openLocations.Count > 0) //Add Other Stop Condition Maybe?
 			{
@@ -100,7 +112,7 @@ namespace Assets.PlayabilityCheck.PathFinding
 				}
 
 				//Find Successors
-				for (int i = 0; i < direction.Length; ++i)
+				for (int i = 0; i < 8; ++i)
 				{
 					int successorX  = (ushort)(currentX + direction[i, 0]);
 					int successorY  = (ushort)(currentY + direction[i, 1]);
@@ -137,6 +149,9 @@ namespace Assets.PlayabilityCheck.PathFinding
 						continue;
 
 					//If revisiting, only continue if it can add something new to the table
+					Debug.Log("SuccessorXY is " + successorXY + ". X = " + successorX + ". Y = " + successorY
+						+ ". CurrentX = " + currentX + ". CurrentY = " + currentY 
+						+ ". Direction is "+direction[i,0]+","+direction[i,1]);
 					if (nodes[successorXY].Count > 0)
 					{
 						int lowestJump = short.MaxValue;
