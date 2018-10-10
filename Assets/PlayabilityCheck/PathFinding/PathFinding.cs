@@ -13,7 +13,9 @@ namespace Assets.PlayabilityCheck.PathFinding
 		public int characterHeight = 1;
 		public int characterJumpHeight = 5;
 		//how many blocks character falls before removing horizontal in-air movement
-		public int blocksFallenUntilCancelSideways = 4; 
+		public int blocksFallenUntilCancelSideways = 4;
+		//adds to cost of state by multiplying its JumpLength by this value
+		public float jumpDeterrentMultiplier = 0.25f;
 
 		public long iterationSearchLimit = 10000;
 
@@ -102,7 +104,7 @@ namespace Assets.PlayabilityCheck.PathFinding
 				{
 					int successorX  = (ushort)(currentX + direction[i, 0]);
 					int successorY  = (ushort)(currentY + direction[i, 1]);
-					int successorXY = successorX * GridManager.Instance.GridWidth + successorY;
+					int successorXY = successorY * GridManager.Instance.GridWidth + successorX;
 
 					//Ignore non-navigable block
 					if (HasBlock(successorX, successorY))
@@ -133,6 +135,29 @@ namespace Assets.PlayabilityCheck.PathFinding
 					if (newJumpLength >= characterJumpHeight * 2 + blocksFallenUntilCancelSideways 
 						&& successorX != currentX)
 						continue;
+
+					//If revisiting, only continue if it can add something new to the table
+					if (nodes[successorXY].Count > 0)
+					{
+						int lowestJump = short.MaxValue;
+						bool visitedCouldMoveSideways = false;
+						for (int j = 0; j < nodes[successorXY].Count; ++j)
+						{
+							if (nodes[successorXY][j].JumpLength < lowestJump)
+								lowestJump = nodes[successorXY][j].JumpLength;
+
+							if (nodes[successorXY][j].JumpLength % 2 == 0 
+								&& nodes[successorXY][j].JumpLength < characterJumpHeight * 2 + blocksFallenUntilCancelSideways)
+								visitedCouldMoveSideways = true;
+						}
+
+						//Ignore if visited node has shorter jump length and provides more insight
+						if (lowestJump <= newJumpLength 
+							&& (newJumpLength % 2 != 0 
+							|| newJumpLength >= characterJumpHeight * 2 + blocksFallenUntilCancelSideways 
+							|| visitedCouldMoveSideways))
+							continue;
+					}
 
 					//////////////////////////////////////////
 					//--Find New Jump Length for Successor--//
@@ -170,12 +195,81 @@ namespace Assets.PlayabilityCheck.PathFinding
 					else if (successorX != currentX) 
 						newJumpLength = jumpLength + 1;
 
-					
+					////////////////////////////////////
+					//--Create and Add Node To Queue--//
+					////////////////////////////////////
+					//Calculate costs
+					int successorCost = nodes[current.xy][current.z].G + (int)(newJumpLength * jumpDeterrentMultiplier);
 
+					int distToGoal = (int)( Math.Sqrt(Math.Pow((successorX - end.x), 2) + Math.Pow((successorY - end.y), 2)));
+					
+					//Create Node
+					PFNode newNode = new PFNode();
+					newNode.JumpLength = newJumpLength;
+					newNode.PX = currentX;
+					newNode.PY = currentY;
+					newNode.PZ = current.z;
+					newNode.G = successorCost;
+					newNode.F = successorCost + distToGoal;
+					newNode.Status = nodeOpenValue;
+
+					if (nodes[successorXY].Count == 0)
+						traversedCoordinates.Push(successorXY);
+
+					nodes[successorXY].Add(newNode);
+					openLocations.Push(new Location(successorXY, nodes[successorXY].Count - 1));
 				}
+
+				//After adding all possible successors, mark current node as closed
+				nodes[current.xy][current.z] = nodes[current.xy][current.z].UpdateStatus(nodeCloseValue);
+				iterationCount++;
 			}
 
+			if (found)
+			{
+				List<Vector2> path = new List<Vector2>();
+				int posX = (int)end.x;
+				int posY = (int)end.y;
 
+				PFNode fPrevNodeTmp = new PFNode();
+				PFNode fNodeTmp = nodes[endLocation.xy][0];
+
+				Vector2 fNode = end;
+				Vector2 fPrevNode = end;
+
+				int parentXY = fNodeTmp.PY * GridManager.Instance.GridWidth + fNodeTmp.PX;
+
+				//Recursively Build Path
+				while (fNode.x != fNodeTmp.PX || fNode.y != fNodeTmp.PY)
+				{
+					PFNode fNextNodeTmp = nodes[parentXY][fNodeTmp.PZ];
+
+					Vector2 prevNodePath = path[path.Count - 1];
+					if ((path.Count == 0)
+						|| (fNodeTmp.JumpLength == 3)
+						|| (fNextNodeTmp.JumpLength != 0 && fNodeTmp.JumpLength == 0)                                                                                                       //mark jumps starts
+						|| (fNodeTmp.JumpLength == 0 && fPrevNodeTmp.JumpLength != 0)                                                                                                       //mark landings
+						|| (fNode.y > path[path.Count - 1].y && fNode.y > fNodeTmp.PY)
+						|| (fNode.y < prevNodePath.y && fNode.y < fNodeTmp.PY)
+						|| ((HasBlock(fNode.x - 1, fNode.y) || HasBlock(fNode.x + 1, fNode.y))
+							&& fNode.y != prevNodePath.y && fNode.x != prevNodePath.x))
+						path.Add(fNode);
+
+					fPrevNode = fNode;
+					posX = fNodeTmp.PX;
+					posY = fNodeTmp.PY;
+					fPrevNodeTmp = fNodeTmp;
+					fNodeTmp = fNextNodeTmp;
+					parentXY = fNodeTmp.PY * GridManager.Instance.GridWidth + fNodeTmp.PX;
+					fNode = new Vector2(posX, posY);
+				}
+
+				path.Add(fNode);
+
+				return path;
+			}
+
+			Debug.LogWarning("AStar Pathfinding failed. Could not find path to goal. ("+end.x+","+end.y+")");
 			return new List<Vector2>();
 		}
 
