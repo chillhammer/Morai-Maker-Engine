@@ -245,6 +245,7 @@ namespace Assets.PlayabilityCheck.PathFinding
 					PFNode fNextNodeTmp = nodes[parentXY][fNodeTmp.PZ];
 
 					Vector2 prevNodePath = path[path.Count - 1];
+					//Filters out redundant nodes
 					if ((path.Count == 0)
 						|| (fNodeTmp.JumpLength == 3)
 						|| (fNextNodeTmp.JumpLength != 0 && fNodeTmp.JumpLength == 0)                                                                                                       //mark jumps starts
