@@ -9,15 +9,13 @@ namespace Assets.PlayabilityCheck.PathFinding
 {
 	public class PathFinding
 	{
-		public int characterWidth = 1; //assuming character scales from top-left
-		public int characterHeight = 1;
 		public int characterJumpHeight = 4;
 		//how many blocks character falls before removing horizontal in-air movement
 		public int blocksFallenUntilCancelSideways = 4;
 		//adds to cost of state by multiplying its JumpLength by this value
 		public float jumpDeterrentMultiplier = 0.25f;
 
-		public long iterationSearchLimit = 1000;
+		public long iterationSearchLimit = 3000;
 
 
 		private List<PFNode>[] nodes; //Grid of List of Nodes
@@ -133,9 +131,16 @@ namespace Assets.PlayabilityCheck.PathFinding
 					//Ignore non-navigable block
 					if (HasBlock(successorX, successorY))
 						continue;
+					//Ignore moving diagonal edge case- blocks perpendicular sides
+					if (direction[i, 0] != 0 && direction[i, 1] != 0)
+					{
+						if (HasBlock(currentX + direction[i, 0], currentY)
+							&& HasBlock(currentX, currentY + direction[i, 1]))
+							continue;
+					}
 
 					
-					bool onGround = HasBlock(successorX, successorY - characterHeight); 
+					bool onGround = HasBlock(successorX, successorY - 1); 
 					bool atCeiling = HasBlock(successorX, successorY + 1);
 
 					int jumpLength = nodes[current.xy][current.z].JumpLength; //Grabs Old
@@ -184,9 +189,9 @@ namespace Assets.PlayabilityCheck.PathFinding
 						newJumpLength = jumpLength + 1;
 
 
-					//////////////////////////////
-					//--Ignore Poor Successors--//
-					//////////////////////////////
+					//////////////////////////////////////////////////
+					//--Ignore Poor Successors Based On JumpLength--//
+					//////////////////////////////////////////////////
 					//If Odd, Ignore Right and Left Successors
 					if (jumpLength % 2 != 0 && successorX != currentX)
 						continue;
