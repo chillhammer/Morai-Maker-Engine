@@ -282,8 +282,6 @@ namespace Assets.PlayabilityCheck.PathFinding
 					PFNode fNextNodeTmp = nodes[parentXY][fNodeTmp.PZ];
 
 					//Filters out redundant nodes
-					path.Add(fNode);
-					/*
 					if ((path.Count == 0)
 						|| (fNodeTmp.JumpLength == 3)
 						|| (fNextNodeTmp.JumpLength != 0 && fNodeTmp.JumpLength == 0)                                                                                                       //mark jumps starts
@@ -293,7 +291,7 @@ namespace Assets.PlayabilityCheck.PathFinding
 						|| ((HasBlock(fNode.x - 1, fNode.y) || HasBlock(fNode.x + 1, fNode.y))
 							&& fNode.y != path[path.Count - 1].y && fNode.x != path[path.Count - 1].x))
 						path.Add(fNode);
-					*/
+					
 
 					fPrevNode = fNode;
 					posX = fNodeTmp.PX;
