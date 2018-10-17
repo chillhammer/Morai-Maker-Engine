@@ -11,13 +11,13 @@ namespace Assets.PlayabilityCheck.PathFinding
 	{
 		public int characterWidth = 1; //assuming character scales from top-left
 		public int characterHeight = 1;
-		public int characterJumpHeight = 5;
+		public int characterJumpHeight = 4;
 		//how many blocks character falls before removing horizontal in-air movement
 		public int blocksFallenUntilCancelSideways = 4;
 		//adds to cost of state by multiplying its JumpLength by this value
 		public float jumpDeterrentMultiplier = 0.25f;
 
-		public long iterationSearchLimit = 10000;
+		public long iterationSearchLimit = 1000;
 
 
 		private List<PFNode>[] nodes; //Grid of List of Nodes
@@ -31,12 +31,8 @@ namespace Assets.PlayabilityCheck.PathFinding
 
 		public PathFinding()
 		{
-
 			traversedCoordinates = new Stack<int>();
-			nodes = new List<PFNode>[GridManager.Instance.GridWidth * GridManager.Instance.GridHeight];
-			for (var i = 0; i < nodes.Length; ++i)
-				nodes[i] = new List<PFNode>(1);
-			openLocations = new Algorithms.PriorityQueueB<Location>(new ComparePFNodeMatrix(nodes));
+			SetUpGridAndQueue();
 		}
 
 
@@ -49,14 +45,27 @@ namespace Assets.PlayabilityCheck.PathFinding
 				return null;
 			}
 
+			//Clearing Before Start
+			while (traversedCoordinates.Count > 0)
+				nodes[traversedCoordinates.Pop()].Clear();
+
+			Debug.Log("FindPath Called. Start: (" + start.x + "," + start.y + ")  & " + "End: (" + end.x + "," + end.y + ")");
+
 			//Reset Values
 			nodeOpenValue += 2; //This allows for nodes to be reset without looping through grid
 			nodeCloseValue += 2;
+			openLocations.Clear();
+
+			//If Created Before GridManager is loaded
+			if (nodes.Length == 0)
+			{
+				SetUpGridAndQueue();
+			}
 
 
 			//Convert From Vector to Location
 			Location myLocation = new Location((int)start.y * GridManager.Instance.GridWidth + (int)start.x, 0);
-			Location endLocation = new Location((int)end.y * GridManager.Instance.GridHeight + (int)end.x, 0);
+			Location endLocation = new Location((int)end.y * GridManager.Instance.GridWidth + (int)end.x, 0);
 
 			
 
@@ -74,6 +83,9 @@ namespace Assets.PlayabilityCheck.PathFinding
 				firstNode.JumpLength = 0;
 			else
 				firstNode.JumpLength = (short)(characterJumpHeight * 2);
+
+			Debug.Log("GridWidth = " + GridManager.Instance.GridWidth + ". mylocation.xy = " + myLocation.xy
+				+ ". Nodes Array Length = " + nodes.Length);
 
 			//Adding Start Location to Stack
 			nodes[myLocation.xy].Add(firstNode);
@@ -135,6 +147,46 @@ namespace Assets.PlayabilityCheck.PathFinding
 					//Even JumpLength values means the character could go Up, Down, Right, Left
 					//Odd  JumpLength values means the character could go Up, Down
 
+					//////////////////////////////////////////
+					//--Find New Jump Length for Successor--//
+					//////////////////////////////////////////
+					//Reset to Zero
+					if (onGround)
+						newJumpLength = 0;
+
+					//Ceiling
+					else if (atCeiling)
+					{
+						if (successorX == currentX) //Fall Down
+							newJumpLength = (short)Mathf.Max(characterJumpHeight * 2, jumpLength + 2);
+						else //Slide Horizontal
+							newJumpLength = (short)Mathf.Max(characterJumpHeight * 2 + 1, jumpLength + 1);
+					}
+
+					//Going Up
+					else if (successorY > currentY)
+					{
+						if (jumpLength < 2) //Boost! Guarantees next move will go Up
+							newJumpLength = 3;
+						else
+							newJumpLength = NextEvenNumber(jumpLength);
+					}
+
+					//Going Down
+					else if (successorY < currentY)
+					{
+						newJumpLength = (short)Mathf.Max(characterJumpHeight * 2, NextEvenNumber(jumpLength));
+
+					}
+
+					//In-Air Side to Side
+					else if (successorX != currentX)
+						newJumpLength = jumpLength + 1;
+
+
+					//////////////////////////////
+					//--Ignore Poor Successors--//
+					//////////////////////////////
 					//If Odd, Ignore Right and Left Successors
 					if (jumpLength % 2 != 0 && successorX != currentX)
 						continue;
@@ -151,7 +203,8 @@ namespace Assets.PlayabilityCheck.PathFinding
 					//If revisiting, only continue if it can add something new to the table
 					Debug.Log("SuccessorXY is " + successorXY + ". X = " + successorX + ". Y = " + successorY
 						+ ". CurrentX = " + currentX + ". CurrentY = " + currentY 
-						+ ". Direction is "+direction[i,0]+","+direction[i,1]);
+						+ ". Direction is "+direction[i,0]+","+direction[i,1]
+						+ ". NewJumpLength is"+newJumpLength);
 					if (nodes[successorXY].Count > 0)
 					{
 						int lowestJump = short.MaxValue;
@@ -166,49 +219,13 @@ namespace Assets.PlayabilityCheck.PathFinding
 								visitedCouldMoveSideways = true;
 						}
 
-						//Ignore if visited node has shorter jump length and provides more insight
+						//Ignore if already visited node has shorter jump length and provides more insight
 						if (lowestJump <= newJumpLength 
 							&& (newJumpLength % 2 != 0 
 							|| newJumpLength >= characterJumpHeight * 2 + blocksFallenUntilCancelSideways 
 							|| visitedCouldMoveSideways))
 							continue;
 					}
-
-					//////////////////////////////////////////
-					//--Find New Jump Length for Successor--//
-					//////////////////////////////////////////
-					//Reset to Zero
-					if (onGround) 
-						newJumpLength = 0;
-
-					//Ceiling
-					else if (atCeiling)
-					{
-						if (successorX == currentX) //Fall Down
-							newJumpLength = (short)Mathf.Max(characterJumpHeight * 2, jumpLength + 2); 
-						else //Slide Horizontal
-							newJumpLength = (short)Mathf.Max(characterJumpHeight * 2 + 1, jumpLength + 1); 
-					}
-
-					//Going Up
-					else if (successorY > currentY) 
-					{
-						if (jumpLength < 2) //Boost! Guarantees next move will go Up
-							newJumpLength = 3;
-						else
-							newJumpLength = NextEvenNumber(jumpLength);
-					}
-
-					//Going Down
-					else if (successorY < currentY) 
-					{
-						newJumpLength = (short)Mathf.Max(characterJumpHeight * 2, NextEvenNumber(jumpLength));
-
-					}
-
-					//In-Air Side to Side
-					else if (successorX != currentX) 
-						newJumpLength = jumpLength + 1;
 
 					////////////////////////////////////
 					//--Create and Add Node To Queue--//
@@ -259,17 +276,19 @@ namespace Assets.PlayabilityCheck.PathFinding
 				{
 					PFNode fNextNodeTmp = nodes[parentXY][fNodeTmp.PZ];
 
-					Vector2 prevNodePath = path[path.Count - 1];
 					//Filters out redundant nodes
+					path.Add(fNode);
+					/*
 					if ((path.Count == 0)
 						|| (fNodeTmp.JumpLength == 3)
 						|| (fNextNodeTmp.JumpLength != 0 && fNodeTmp.JumpLength == 0)                                                                                                       //mark jumps starts
 						|| (fNodeTmp.JumpLength == 0 && fPrevNodeTmp.JumpLength != 0)                                                                                                       //mark landings
 						|| (fNode.y > path[path.Count - 1].y && fNode.y > fNodeTmp.PY)
-						|| (fNode.y < prevNodePath.y && fNode.y < fNodeTmp.PY)
+						|| (fNode.y < path[path.Count - 1].y && fNode.y < fNodeTmp.PY)
 						|| ((HasBlock(fNode.x - 1, fNode.y) || HasBlock(fNode.x + 1, fNode.y))
-							&& fNode.y != prevNodePath.y && fNode.x != prevNodePath.x))
+							&& fNode.y != path[path.Count - 1].y && fNode.x != path[path.Count - 1].x))
 						path.Add(fNode);
+					*/
 
 					fPrevNode = fNode;
 					posX = fNodeTmp.PX;
@@ -294,12 +313,16 @@ namespace Assets.PlayabilityCheck.PathFinding
 		#region Helpers
 		private bool HasBlock(int x, int y)
 		{
+			if (x < 0 || x >= GridManager.Instance.GridWidth)
+				return true;
+			else if (y < 0 || y >= GridManager.Instance.GridHeight)
+				return true;
 			return GridManager.Instance.ContainsGridObject(true, x, y);
 		}
 
 		private bool HasBlock(float x, float y)
 		{
-			return GridManager.Instance.ContainsGridObject(true, (int)x, (int)y);
+			return HasBlock((int)x, (int)y);
 		}
 
 		private int NextEvenNumber(int num)
@@ -308,6 +331,16 @@ namespace Assets.PlayabilityCheck.PathFinding
 				return num + 2;
 			else
 				return num + 1;
+		}
+
+		//Creates the node grid and queue based on that grid
+		//Created in constructor or on path find demand if it isn't created already
+		private void SetUpGridAndQueue()
+		{
+			nodes = new List<PFNode>[GridManager.Instance.GridWidth * GridManager.Instance.GridHeight];
+			for (var i = 0; i < nodes.Length; ++i)
+				nodes[i] = new List<PFNode>(1);
+			openLocations = new Algorithms.PriorityQueueB<Location>(new ComparePFNodeMatrix(nodes));
 		}
 		#endregion
 
