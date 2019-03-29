@@ -11,7 +11,7 @@ namespace Assets.PlayabilityCheck.PathFinding
 	{
 		public int characterJumpHeight = 4;
 		//how many blocks character falls before removing horizontal in-air movement
-		public int blocksFallenUntilCancelSideways = 4;
+		public int blocksFallenUntilCancelSideways = 2;
 		//adds to cost of state by multiplying its JumpLength by this value
 		public float jumpDeterrentMultiplier = 0.25f;
 

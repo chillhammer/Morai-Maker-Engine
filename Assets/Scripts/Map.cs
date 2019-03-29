@@ -60,6 +60,11 @@ public class Map : MonoBehaviour {
 	public static Map Instance;
 	public static string level_name;
 
+	// Pathfinding Bot
+	[SerializeField] private GameObject pathBot;
+	[HideInInspector] public MarioBot pathBotInstance;
+	public static List<Vector2> pathForBots;
+
 	private Vector2 currCameraPosition, prevCameraPosition;
 	private bool initialSpawn = false;
 
@@ -84,6 +89,10 @@ public class Map : MonoBehaviour {
 		if (!initialSpawn) {
 			SpawnEnemies (0, 32);
 			initialSpawn = true;
+			if (pathForBots != null) {
+				pathBotInstance = Instantiate(pathBot).GetComponent<MarioBot>();
+				pathBotInstance.transform.position = new Vector3(pathForBots[0].x, pathForBots[0].y, -10);
+			}
 		}
 
 		GetCameraPosition ();

@@ -122,8 +122,11 @@ namespace Assets.Scripts.Core
 						Vector2 pathEnd = new Vector2(spriteX, spriteY); ;
 						if (pathStart != pathEnd)
 						{
+							// Actually calculates path!
+							List<Vector2> path = pathFinding.FindPath(pathStart, pathEnd);
 							pathEndPoints = 2;
-							pathVis.SetDrawLine(pathFinding.FindPath(pathStart, pathEnd));
+							pathVis.SetDrawLine(path);
+							Map.pathForBots = path;
 						}
 					}
 					//Exit Condition
