@@ -40,6 +40,13 @@ public class MarioBot : BaseSprite
 	public bool nodeInAir = false;
 	public List<Vector2> pathToFollow;
 	public int horizontalSignDif = 1;
+	public int verticalSignDif = 1;
+	public float verticalDif = 0;
+	public float playerX = 0;
+	public float playerY = 0;
+
+	public float xOffsetMagnitude = 0.0f;
+	public float currentOffset = 0.0f;
 
 	public KeyCode left, right, jump, down, a;
 	public string horizontalStringName = "Horizontal1";
@@ -68,8 +75,7 @@ public class MarioBot : BaseSprite
 		startPlay = Time.time;
 
 		pathToFollow = Map.pathForBots;
-		pathToFollow.Reverse();
-		transform.position = new Vector3(pathToFollow[0].x, pathToFollow[0].y, transform.position.z);
+		//transform.position = new Vector3(pathToFollow[0].x, pathToFollow[0].y, transform.position.z);
 	}
 
 	public void SetHeld()
@@ -125,17 +131,36 @@ public class MarioBot : BaseSprite
 		if (nodeToChaseIndex >= Map.pathForBots.Count)
 			return;
 		Vector2 nodePos = Map.pathForBots[nodeToChaseIndex];
-		float dist = Vector2.Distance(nodePos, new Vector2(transform.position.x, transform.position.y));
-		int currentHorSignDif = (int)Mathf.Sign(Mathf.Round(nodePos.x - transform.position.x));
-		int currentVerSignDif = (int)Mathf.Sign(Mathf.Round(nodePos.y - transform.position.y));
+		//float dist = Vector2.Distance(nodePos, new Vector2(transform.position.x, transform.position.y));
+		playerY = transform.position.y + 0.5f;
+		playerX = transform.position.x + 0.5f;
+		int currentHorSignDif = (int)Mathf.Sign(nodePos.x - playerX + currentOffset);
+		int currentVerSignDif = (int)Mathf.Sign(nodePos.y - playerY);
+		verticalSignDif = currentVerSignDif;
+		verticalDif = nodePos.y - playerY;
 		if (!lookedAtNode)
 		{
 			lookedAtNode = true;
+			currentOffset = Random.Range(-xOffsetMagnitude, xOffsetMagnitude);
 			horizontalSignDif = currentHorSignDif;
 			Vector2 nodePosMiddle = nodePos - Vector2.left * GetWidth() * 0.5f;
-			nodeInAir = VerticalCollisionCheck(nodePosMiddle, nodePosMiddle + Vector2.down) == null;
-		
-		} else
+            if (HorizontalCollisionCheck(nodePosMiddle, nodePosMiddle + Vector2.right * Mathf.Sign(currentOffset)) != null)
+                currentOffset = 0;
+            nodeInAir = VerticalCollisionCheck(nodePosMiddle, nodePosMiddle + Vector2.down) == null;
+
+            // Smoothing
+            if (nodeToChaseIndex < Map.pathForBots.Count - 1)
+            {
+                Vector2 nextNodePos = Map.pathForBots[nodeToChaseIndex + 1];
+                int nextHorSignDif = (int)Mathf.Sign(nextNodePos.x - playerX + currentOffset);
+                if (nextHorSignDif != currentHorSignDif)
+                {
+                    horizontalSignDif = nextHorSignDif;
+                    nodeToChaseIndex++;
+                }
+            }
+
+        } else
 		{
 			if (horizontalSignDif == 0 || horizontalSignDif != currentHorSignDif)
 			{
@@ -143,7 +168,16 @@ public class MarioBot : BaseSprite
 				{
 					nodeToChaseIndex++;
 					lookedAtNode = false;
-				}
+
+                    // Completed
+                    if (nodeToChaseIndex >= Map.pathForBots.Count)
+                    {
+                        Map.botsPathCompleted++;
+                        Debug.Log("Bots Completed Path Percentage: " + Map.botsPathCompleted);
+                        GameObject.Find("BotsCompleted").GetComponent<UnityEngine.UI.Text>().text = "Bots Completed: "+Map.botsPathCompleted+"/100";
+                    }
+
+                }
 			}
 		}
 		// Handle Left or Right Movement
@@ -157,9 +191,11 @@ public class MarioBot : BaseSprite
 		}
 
 		// Jump
-		if (currentVerSignDif == 1 && Mathf.Abs(nodePos.x - transform.position.x) < 2.0f)
+		// Going Up
+		if (currentVerSignDif == 1)
 			keyEmulated[(int)Key.KEY_JUMP] = true;
-		if (currentVerSignDif == -1 && Mathf.Abs(nodePos.y - transform.position.y) < 2.0f && velocity.y > 0)
+		// Going Down
+		if (currentVerSignDif == -1 && inAir && velocity.y > 5.0f)
 		{
 			keyEmulated[(int)Key.KEY_JUMP] = true;
 		}

@@ -64,6 +64,7 @@ public class Map : MonoBehaviour {
 	[SerializeField] private GameObject pathBot;
 	[HideInInspector] public MarioBot pathBotInstance;
 	public static List<Vector2> pathForBots;
+    public static int botsPathCompleted;
 
 	private Vector2 currCameraPosition, prevCameraPosition;
 	private bool initialSpawn = false;
@@ -89,11 +90,26 @@ public class Map : MonoBehaviour {
 		if (!initialSpawn) {
 			SpawnEnemies (0, 32);
 			initialSpawn = true;
-			if (pathForBots != null) {
-				pathBotInstance = Instantiate(pathBot).GetComponent<MarioBot>();
-				pathBotInstance.transform.position = new Vector3(pathForBots[0].x, pathForBots[0].y, -10);
-			}
+
+            // A Star Bots //////////
+            if (pathForBots != null) {
+                botsPathCompleted = 0;
+				Vector3 spawnPosition = new Vector3(pathForBots[0].x, pathForBots[0].y, -10);
+				
+                // Initial Bot Spawn
+				Instantiate(pathBot, spawnPosition, Quaternion.identity).GetComponent<MarioBot>();
+
+                int numOfBots = 99;
+				for (int i = 0; i < numOfBots; i++)
+				{
+					pathBotInstance = Instantiate(pathBot, spawnPosition + Random.Range(-0.1f, 0.1f) * Vector3.right, Quaternion.identity).GetComponent<MarioBot>();
+					pathBotInstance.xOffsetMagnitude = 0.5f;
+				}
+                GameObject.Find("BotsCompleted").GetComponent<UnityEngine.UI.Text>().text = "Bots Completed: 0/100";
+                
+            }
 		}
+        ////////////////////////////
 
 		GetCameraPosition ();
 

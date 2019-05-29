@@ -38,6 +38,7 @@ namespace Assets.Scripts.Core
             dialogueMenu.DialogueClosed += () => RemoveLock(dialogueMenu);
 			mode = PlacementMode.Level;
 			pathFinding = new PathFinding();
+            Map.pathForBots = null;
 		}
 
 		private void Update()
@@ -127,6 +128,7 @@ namespace Assets.Scripts.Core
 							pathEndPoints = 2;
 							pathVis.SetDrawLine(path);
 							Map.pathForBots = path;
+                            Map.pathForBots.Reverse();
 						}
 					}
 					//Exit Condition

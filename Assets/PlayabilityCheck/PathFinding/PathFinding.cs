@@ -9,9 +9,9 @@ namespace Assets.PlayabilityCheck.PathFinding
 {
 	public class PathFinding
 	{
-		public int characterJumpHeight = 4;
+		public int characterJumpHeight = 5;
 		//how many blocks character falls before removing horizontal in-air movement
-		public int blocksFallenUntilCancelSideways = 2;
+		public int blocksFallenUntilCancelSideways = 0;
 		//adds to cost of state by multiplying its JumpLength by this value
 		public float jumpDeterrentMultiplier = 0.25f;
 
@@ -143,6 +143,8 @@ namespace Assets.PlayabilityCheck.PathFinding
 					bool onGround = HasBlock(successorX, successorY - 1); 
 					bool atCeiling = HasBlock(successorX, successorY + 1);
 
+					bool currentOnGround = HasBlock(currentX, currentY - 1);
+
 					int jumpLength = nodes[current.xy][current.z].JumpLength; //Grabs Old
 					int newJumpLength = -1;
 
@@ -171,8 +173,8 @@ namespace Assets.PlayabilityCheck.PathFinding
 					//Going Up
 					else if (successorY > currentY)
 					{
-						if (jumpLength < 2) //Boost! Guarantees next move will go Up
-							newJumpLength = 3;
+						if (jumpLength < 2) //Boost! Guarantees next move will go  --- not -- Up
+							newJumpLength = 2;
 						else
 							newJumpLength = NextEvenNumber(jumpLength);
 					}
@@ -203,6 +205,9 @@ namespace Assets.PlayabilityCheck.PathFinding
 					//If Falling fast, Make Sure Not Going Sideways
 					if (newJumpLength >= characterJumpHeight * 2 + blocksFallenUntilCancelSideways 
 						&& successorX != currentX)
+						continue;
+
+					if (onGround && !currentOnGround && successorX != currentX)
 						continue;
 
 					//If revisiting, only continue if it can add something new to the table
